@@ -24,6 +24,7 @@ ALLOWED_MEDIA_EXTENSIONS = VIDEO_EXTENSIONS | IMAGE_EXTENSIONS
 _FILENAME_RE = re.compile(r"^[A-Za-z0-9_\-]+\.[A-Za-z0-9]+$")
 
 
+
 @dataclass(frozen=True)
 class AccentColorOption:
     name: str
@@ -35,6 +36,7 @@ class AccentColorOption:
 # accent. The wheel itself allows any hex; these are just presets.
 ACCENT_COLOR_OPTIONS: list[AccentColorOption] = [
     AccentColorOption("Arctic Blue", "#4F9DDE"),
+    AccentColorOption("Snow White", "#FFFFFF"),
     AccentColorOption("Cyan Ice", "#38BDF8"),
     AccentColorOption("Indigo Frost", "#818CF8"),
     AccentColorOption("Steel Grey", "#94A3B8"),

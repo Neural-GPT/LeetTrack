@@ -76,6 +76,27 @@ def _ensure_site_settings_columns() -> None:
 
 _ensure_site_settings_columns()
 
+def _migrate_default_accent_color() -> None:
+    """
+    One-time data fixup: your already-running deployment's single
+    site_settings row still has '#4F9DDE' saved from before. This
+    flips it to the new white default — but only if it's still
+    exactly the old default, so it won't overwrite a color you
+    already picked on purpose in the Appearance panel.
+    """
+    from app.models.system import SiteSettings
+
+    db = SessionLocal()
+    try:
+        s = db.get(SiteSettings, 1)
+        if s and s.accent_color == "#4F9DDE":
+            s.accent_color = "#FFFFFF"
+            db.commit()
+    finally:
+        db.close()
+
+
+_migrate_default_accent_color()
 
 def _ensure_notifications_columns() -> None:
     """Same idea as _ensure_site_settings_columns() above, for the

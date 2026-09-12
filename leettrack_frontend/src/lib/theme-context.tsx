@@ -33,7 +33,7 @@ type Theme = {
 // registered media yet" and the Background component just shows the
 // dark gradient fallback. Nothing hardcoded to a specific filename.
 const DEFAULT_THEME: Theme = {
-  accent_color: "#4F9DDE",
+  accent_color: "#FFFFFFF",
   background_media: "",
   background_media_type: "video",
   background_media_url: "",

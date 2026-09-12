@@ -169,7 +169,7 @@ class SiteSettings(Base):
     __tablename__ = "site_settings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
-    accent_color: Mapped[str] = mapped_column(String(20), default="#4F9DDE")
+    accent_color: Mapped[str] = mapped_column(String(20), default="#FFFFFF")
     background_media: Mapped[str] = mapped_column(String(100), default="hero-bg1.mp4")
     background_media_url: Mapped[str] = mapped_column(String(500), default="")
     # Local single-slot cache of whatever background_media_url currently
