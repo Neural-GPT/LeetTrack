@@ -1,0 +1,10 @@
+# Only needed to run scripts/gmail_oauth_setup.py once, locally.
+# The deployed app does NOT need these — app/services/email.py talks to
+# Gmail's API directly over HTTP with httpx (already in the main
+# requirements.txt), using the refresh token this setup produces.
+#
+# pip install --break-system-packages -r scripts/requirements.txt
+
+google-auth
+google-auth-oauthlib
+google-api-python-client

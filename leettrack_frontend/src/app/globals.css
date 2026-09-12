@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #08080B;
+  --color-panel: #0F0F13;
+  --color-panel-border: #1E1E24;
+  --color-text-primary: #EDEDEF;
+  --color-text-secondary: #B4B4BD;
+  --color-text-muted: #83838C;
+  --color-brand: #4F9DDE;
+  --color-accepted: #00D4B8;
+  --color-danger: #FF6B66;
+  --font-display: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+/* Site-wide 110% scale, so the default view matches how the design
+   was being reviewed (browser zoomed to 110%) rather than the
+   unscaled 100% layout. Uses the CSS `zoom` property rather than
+   `transform: scale` on purpose — `zoom` reflows layout the same way
+   real browser zoom does (scrollbars, fixed-position elements, and
+   overflow all recalculate correctly), where a transform would only
+   stretch the painted pixels without the layout underneath actually
+   changing size. */
+html {
+  zoom: 1.1;
+}
+
+/* ---------------------------------------------------------------------
+   Theme presets — Super Admin-controlled, applied via a `data-theme`
+   attribute on <html> (see lib/theme-context.tsx). Purely a frontend
+   styling switch: it changes how the glass panels are tinted, not the
+   accent color or the background media, which stay independently
+   configurable in the Appearance panel.
+
+   "classic" is the default/original look (light frost — a white-ish
+   tint at low opacity, like glass over a bright surface). "future"
+   reads darker and more solid, per spec ("make the panels dark in
+   color") — a near-black tint at higher opacity — while keeping the
+   same blur/glass mechanism, just moodier.
+
+   Every .glass / .glass-strong usage across every page/dashboard reads
+   these variables, so switching the preset re-themes the whole site
+   with no per-page changes needed.
+   --------------------------------------------------------------------- */
+:root {
+  --panel-tint: 255, 255, 255;
+  --panel-tint-alpha: 0.06;
+  --panel-border-alpha: 0.12;
+  --panel-blur: 20px;
+
+  --panel-strong-tint-alpha: 0.09;
+  --panel-strong-border-alpha: 0.16;
+  --panel-strong-blur: 28px;
+
+  /* Fallback for the dark-surfaces override below, before the theme
+     API responds — matches the Super Admin default. */
+  --color-surface-dark: #000000;
+}
+
+[data-theme="future"] {
+  --panel-tint: 8, 10, 18;
+  --panel-tint-alpha: 0.62;
+  --panel-border-alpha: 0.16;
+  --panel-blur: 22px;
+
+  --panel-strong-tint-alpha: 0.74;
+  --panel-strong-border-alpha: 0.2;
+  --panel-strong-blur: 26px;
+}
+
+/* Glassmorphic surface — layered on top of the video background.
+   Frosted panel: translucent fill + blur + hairline border + soft inner
+   highlight so it reads as glass rather than a flat dark card.
+
+   NOTE on sizing: intentionally NOT adding a default padding here.
+   Every .glass usage already sets its own Tailwind padding utility
+   (p, px, py), and because those utility classes compile to the same
+   specificity as this rule but later in source order within a single
+   stylesheet, a padding added here would silently override every
+   utility padding across the site (nav pills, buttons, badges) rather
+   than just filling in the gaps. The "fuller, less cramped" panel
+   sizing this changelog asked for is handled per-page instead, by
+   widening each page's max-w content container (see
+   admin/settings/teacher/dashboard/leaderboard/analytics pages, and
+   Hero.tsx) — that grows the panels' footprint on screen without
+   touching their internal padding, so nothing reads as bulkier. */
+.glass {
+  background: rgba(var(--panel-tint), var(--panel-tint-alpha));
+  backdrop-filter: blur(var(--panel-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, var(--panel-border-alpha));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.glass-strong {
+  background: rgba(var(--panel-tint), var(--panel-strong-tint-alpha));
+  backdrop-filter: blur(var(--panel-strong-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--panel-strong-blur)) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, var(--panel-strong-border-alpha));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------------------------------------------------------------------
+   Dark-surfaces override — Super Admin toggle (Appearance panel) that
+   forces a solid color (black by default, but configurable) behind
+   specific surfaces instead of the usual glass tint: the AI chat
+   input, the AI assistant's reply bubbles, and the notification
+   dropdown. Off by default; each target element carries the
+   `.dark-surface-target` class and only picks this up while
+   [data-dark-surfaces="on"] is set on <html>. Higher specificity than
+   .glass/.bg-white/8 alone, so it wins without needing !important.
+   --------------------------------------------------------------------- */
+[data-dark-surfaces="on"] .dark-surface-target {
+  background: var(--color-surface-dark);
+}
+
+/* Tailwind bakes bg-brand/text-brand/etc into a literal hex at BUILD
+   time (verified via compiled output) — it does NOT stay as
+   var(--color-brand), so it can't react to the Super Admin changing the
+   accent color at runtime. These classes exist for that: every one
+   below is guaranteed to read the live CSS variable on every paint. */
+.text-brand-live {
+  color: var(--color-brand);
+}
+.bg-brand-live {
+  background-color: var(--color-brand);
+}
+.border-brand-live {
+  border-color: var(--color-brand);
+}
+.bg-brand-live-10 {
+  background-color: color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+.bg-brand-live-15 {
+  background-color: color-mix(in srgb, var(--color-brand) 15%, transparent);
+}
+.bg-brand-live-20 {
+  background-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+.border-brand-live-25 {
+  border-color: color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+.border-brand-live-30 {
+  border-color: color-mix(in srgb, var(--color-brand) 30%, transparent);
+}
+.border-brand-live-50 {
+  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
+}
+
+/* Frosted pill using the live accent color — background tint + border,
+   used for badges/eyebrows. */
+.glass-brand {
+  background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
+}
+
+/* ---------------------------------------------------------------------
+   Achievement unlock popup (components/AchievementToast.tsx) — a
+   bouncy drop-in for the card itself, a little icon "pop", and a
+   handful of confetti pieces that fall/spin past the card. Pure CSS,
+   no animation library, so it's cheap to fire on every unlock.
+   --------------------------------------------------------------------- */
+@keyframes achievement-toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.achievement-toast {
+  animation: achievement-toast-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes achievement-toast-icon-pop {
+  0% {
+    transform: scale(0.4) rotate(-15deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+.achievement-toast-icon {
+  animation: achievement-toast-icon-pop 0.5s 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) rotate(0deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(56px) rotate(280deg);
+  }
+}
+.confetti-piece {
+  position: absolute;
+  top: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  animation-name: confetti-fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: both;
+}

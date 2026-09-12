@@ -1,0 +1,6 @@
+# Runtime cache for Super Admin-linked background media (see
+# services/theme.py's cache_remote_media()). Never commit actual
+# cached files — they're re-fetched automatically the next time the
+# background link is set/changed, and shouldn't bloat the repo.
+*
+!.gitignore
