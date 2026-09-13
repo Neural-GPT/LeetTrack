@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -107,8 +107,15 @@ def _theme_out(s: SiteSettings) -> ThemeOut:
 
 
 @router.get("/theme", response_model=ThemeOut)
-def get_theme(db: Session = Depends(get_db)):
-    """Public — the landing page and every page's background need this before login."""
+def get_theme(response: Response, db: Session = Depends(get_db)):
+    """Public — the landing page and every page's background need this before login.
+    Called on literally every page load by every visitor, so a short
+    cache is a real win: `stale-while-revalidate` means a repeat visit
+    within a minute gets the instantly-cached response while a fresh
+    one is fetched in the background, rather than blocking on the
+    network every time. 30s max-age keeps a Super Admin's theme change
+    visible to everyone within half a minute at most."""
+    response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
     s = _get_or_create_settings(db)
     return _theme_out(s)
 
@@ -151,7 +158,14 @@ def get_background_media(f: str, db: Session = Depends(get_db)):
 
 @router.get("/theme/options", response_model=ThemeOptionsOut)
 def get_theme_options(db: Session = Depends(get_db)):
-    """Public — powers the Super Admin's picker UI, but harmless to expose generally."""
+    """
+    Public — powers the Super Admin's picker UI, but harmless to expose
+    generally. Deliberately NOT cached: this is only ever called from
+    the admin panel, right after the admin registers/removes a file, so
+    it needs to reflect that write immediately — a short server-side
+    cache here previously caused a real bug where a newly-registered
+    background wouldn't show up in the picker for up to a minute.
+    """
     registered = db.scalars(select(BackgroundMedia).order_by(BackgroundMedia.filename)).all()
     return ThemeOptionsOut(
         accent_colors=[{"name": o.name, "hex": o.hex} for o in ACCENT_COLOR_OPTIONS],

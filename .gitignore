@@ -111,3 +111,61 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# =========================================================
+# Frontend (Next.js) — leettrack_frontend/
+# =========================================================
+leettrack_frontend/.next/
+leettrack_frontend/out/
+leettrack_frontend/node_modules/
+leettrack_frontend/.turbo/
+leettrack_frontend/.vercel/
+leettrack_frontend/next-env.d.ts
+leettrack_frontend/*.tsbuildinfo
+leettrack_frontend/npm-debug.log*
+leettrack_frontend/yarn-debug.log*
+leettrack_frontend/yarn-error.log*
+leettrack_frontend/.pnpm-debug.log*
+
+# =========================================================
+# Backend (Python / FastAPI) — leettrack_backend/
+# =========================================================
+leettrack_backend/__pycache__/
+leettrack_backend/**/__pycache__/
+leettrack_backend/.venv/
+leettrack_backend/venv/
+leettrack_backend/env/
+leettrack_backend/*.egg-info/
+leettrack_backend/media_cache/
+leettrack_backend/*.db
+leettrack_backend/*.sqlite3
+leettrack_backend/**/*.py[cod]
+
+# =========================================================
+# Environment / secrets — never commit these
+# =========================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# =========================================================
+# Editor / OS junk
+# =========================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# =========================================================
+# Logs / misc
+# =========================================================
+*.log
+coverage/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/

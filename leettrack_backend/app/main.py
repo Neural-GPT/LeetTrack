@@ -4,6 +4,7 @@ import uuid
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import inspect, select, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -76,13 +77,20 @@ def _ensure_site_settings_columns() -> None:
 
 _ensure_site_settings_columns()
 
+
 def _migrate_default_accent_color() -> None:
     """
-    One-time data fixup: your already-running deployment's single
-    site_settings row still has '#4F9DDE' saved from before. This
-    flips it to the new white default — but only if it's still
-    exactly the old default, so it won't overwrite a color you
-    already picked on purpose in the Appearance panel.
+    One-time data fixup, not a schema change: the *column* already
+    existed, so _ensure_site_settings_columns() above doesn't touch
+    it — but changing the Python-level `default="#4F9DDE"` on the
+    model only affects brand-new rows, not the single site_settings
+    row an already-running deployment already has saved with the old
+    default baked in. This flips that row from blue to the new white
+    default, but ONLY if it still exactly matches the old default —
+    if a Super Admin already picked a different accent color on
+    purpose, we leave it alone rather than clobbering their choice.
+    Safe to run every boot: it's a no-op the second time onward, since
+    the value will no longer be the old default.
     """
     from app.models.system import SiteSettings
 
@@ -97,6 +105,7 @@ def _migrate_default_accent_color() -> None:
 
 
 _migrate_default_accent_color()
+
 
 def _ensure_notifications_columns() -> None:
     """Same idea as _ensure_site_settings_columns() above, for the
@@ -291,6 +300,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Compresses any response over 1KB (JSON payloads, mainly — the
+# leaderboard/analytics/data-center endpoints return the most). Free
+# bandwidth/latency win: gzip is CPU-cheap relative to the network time
+# it saves, and it's fully transparent to clients (every browser and
+# `fetch` decompresses it automatically) — no behavior change on
+# either side.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 # ---------------------------------------------------------------------------

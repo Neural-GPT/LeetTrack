@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import NotificationBell from "@/components/NotificationBell";
-import ChatBubble from "@/components/ChatBubble";
+import ChatBubble from "@/components/LazyChatBubble";
 import OnlineIndicator from "@/components/OnlineIndicator";
+
+
 
 const ROLE_HOME: Record<string, string> = {
   student: "/dashboard",

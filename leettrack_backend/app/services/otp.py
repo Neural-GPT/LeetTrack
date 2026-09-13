@@ -50,10 +50,15 @@ def create_and_send_otp(
     db.commit()
 
     body = (
-        f"Your LeetTrack verification code is {code}.\n\n"
-        f"It expires in {settings.OTP_EXPIRE_MINUTES} minutes. "
-        f"If you didn't request this, you can ignore this email."
-    )
+    "VERIFY YOUR LEETTRACK ACCOUNT\n\n"
+    "Hi there,\n\n"
+    "Use the verification code below to complete your LeetTrack registration:\n\n"
+    f"        {code}\n\n"
+    f"This code will expire in {settings.OTP_EXPIRE_MINUTES} minutes.\n\n"
+    "If you didn't request this code, you can safely ignore this email. "
+    "Your account will remain secure.\n\n"
+    "— The LeetTrack Team"
+)
     send_email(email, subject, body)
 
     return None if is_email_configured() else code

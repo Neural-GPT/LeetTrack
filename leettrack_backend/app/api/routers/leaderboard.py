@@ -12,6 +12,7 @@ from app.models.enums import SubmissionStatus
 from app.models.submission import Submission
 from app.models.user import StudentProfile, User
 from app.services import leetcode_stats
+from app.services.cache import cached
 from app.services.scoring import LeaderboardScore, aggregate_leaderboard
 
 router = APIRouter(prefix="/api/leaderboard", tags=["leaderboard"])
@@ -45,6 +46,26 @@ def get_leaderboard(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    # This computation loops over every student running a per-student
+    # query (plus leetcode_stats' own cache lookup) — identical for
+    # every caller given the same filters, so it's cached briefly
+    # rather than re-run on every single page view/poll. 45s is short
+    # enough that a new submission still shows up almost immediately,
+    # long enough to absorb repeated polling from many students'
+    # dashboards hitting this at once.
+    cache_key = f"leaderboard:{scope}:{time_range}:{ranking_basis}:{section_id}"
+    return cached(cache_key, 45, lambda: _compute_leaderboard(
+        scope, time_range, ranking_basis, section_id, db
+    ))
+
+
+def _compute_leaderboard(
+    scope: Scope,
+    time_range: TimeRange,
+    ranking_basis: RankingBasis,
+    section_id: int | None,
+    db: Session,
+) -> list[LeaderboardEntry]:
     since = None
     if time_range == "last_two_weeks":
         since = datetime.now(timezone.utc) - timedelta(days=14)

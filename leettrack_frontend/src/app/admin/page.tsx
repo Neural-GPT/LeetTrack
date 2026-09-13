@@ -743,7 +743,13 @@ function AppearancePanel() {
   }
 
   function loadOptions() {
-    api.get<ThemeOptions>("/api/settings/theme/options").then(setOptions).catch(() => null);
+    // no-store: this is always called either on initial mount or right
+    // after the admin's own add/delete write — it must reflect that
+    // write immediately, not whatever the browser has cached.
+    api
+      .get<ThemeOptions>("/api/settings/theme/options", { cache: "no-store" })
+      .then(setOptions)
+      .catch(() => null);
   }
 
   useEffect(() => {

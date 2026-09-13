@@ -4,7 +4,7 @@ import StudentSidebar from "@/components/StudentSidebar";
 import NotificationBell from "@/components/NotificationBell";
 import OnlineIndicator from "@/components/OnlineIndicator";
 import FeedbackWidget from "@/components/FeedbackWidget";
-import ChatBubble from "@/components/ChatBubble";
+import ChatBubble from "@/components/LazyChatBubble";
 import LevelProgressBar from "@/components/LevelProgressBar";
 import AchievementToast from "@/components/AchievementToast";
 

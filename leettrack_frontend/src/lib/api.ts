@@ -233,7 +233,7 @@ export async function downloadFile(path: string, filename: string): Promise<void
 }
 
 export const api = {
-  get: <T = unknown>(path: string) => apiFetch<T>(path),
+  get: <T = unknown>(path: string, options?: RequestInit) => apiFetch<T>(path, options),
   post: <T = unknown>(path: string, body?: unknown) =>
     apiFetch<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
   patch: <T = unknown>(path: string, body?: unknown) =>
