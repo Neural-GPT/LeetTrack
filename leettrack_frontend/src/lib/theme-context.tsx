@@ -38,7 +38,7 @@ const DEFAULT_THEME: Theme = {
   background_media_type: "video",
   background_media_url: "",
   background_media_proxy_path: "",
-  theme_preset: "classic",
+  theme_preset: "future",
   dark_surfaces_enabled: false,
   dark_surfaces_color: "#000000",
 };
