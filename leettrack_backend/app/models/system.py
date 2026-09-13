@@ -178,7 +178,7 @@ class SiteSettings(Base):
     # cached yet.
     background_media_cache_path: Mapped[str] = mapped_column(String(100), default="")
     background_media_cache_type: Mapped[str] = mapped_column(String(10), default="")
-    theme_preset: Mapped[str] = mapped_column(String(30), default="classic")
+    theme_preset: Mapped[str] = mapped_column(String(30), default="future")
     dark_surfaces_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     dark_surfaces_color: Mapped[str] = mapped_column(String(20), default="#000000")
     # Super Admin on/off switch for the site-wide public chat (see

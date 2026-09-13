@@ -64,7 +64,7 @@ def _ensure_site_settings_columns() -> None:
         "background_media_url": "VARCHAR(500) DEFAULT ''",
         "background_media_cache_path": "VARCHAR(100) DEFAULT ''",
         "background_media_cache_type": "VARCHAR(10) DEFAULT ''",
-        "theme_preset": "VARCHAR(30) DEFAULT 'classic'",
+        "theme_preset": "VARCHAR(30) DEFAULT 'future'",
         "dark_surfaces_enabled": f"BOOLEAN DEFAULT {bool_default}",
         "dark_surfaces_color": "VARCHAR(20) DEFAULT '#000000'",
         "public_chat_enabled": f"BOOLEAN DEFAULT {'TRUE' if is_postgres else '1'}",
@@ -105,6 +105,29 @@ def _migrate_default_accent_color() -> None:
 
 
 _migrate_default_accent_color()
+
+def _migrate_default_theme_preset() -> None:
+    """
+    Same idea as _migrate_default_accent_color() above: the column
+    already existed with 'classic' as its old default, so an
+    already-running deployment's single site_settings row still has
+    'classic' saved. This flips it to 'future', but only if it's still
+    exactly the old default — a Super Admin who already switched to
+    'classic' or 'future' on purpose keeps whatever they picked.
+    """
+    from app.models.system import SiteSettings
+
+    db = SessionLocal()
+    try:
+        s = db.get(SiteSettings, 1)
+        if s and s.theme_preset == "classic":
+            s.theme_preset = "future"
+            db.commit()
+    finally:
+        db.close()
+
+
+_migrate_default_theme_preset()
 
 
 def _ensure_notifications_columns() -> None:
