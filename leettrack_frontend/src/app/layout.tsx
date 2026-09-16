@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/lib/theme-context";
 // without it, link-unfurlers silently fail to load the preview image.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-const title = "LeetTrack — Class Leaderboards & LeetCode Tracking";
+const title = "LeetTrack";
 const description =
   "LeetTrack turns daily LeetCode practice into ranked, live performance for your whole class.";
 

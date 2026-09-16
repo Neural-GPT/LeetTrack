@@ -181,7 +181,7 @@ ACHIEVEMENTS: list[AchievementDef] = [
         lambda c: c.levels_cleared >= 4,
     ),
     AchievementDef(
-        "level_5_clear", "Peak Performer", "Cleared Level 5 — the top of the ladder.",
+        "level_5_clear", "Peak Performer", "Cleared Level 5: the top of the ladder.",
         "crown", "Reach Level 5 to unlock.",
         lambda c: c.levels_cleared >= 5,
     ),

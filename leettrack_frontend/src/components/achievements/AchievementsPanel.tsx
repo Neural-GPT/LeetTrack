@@ -101,7 +101,7 @@ function AchievementCard({ a }: { a: Achievement }) {
             Unlocked {new Date(a.unlocked_at).toLocaleDateString()}
           </p>
         )}
-        {next && <p className="text-[10px] text-brand-live mt-1.5">Next up — {a.hint}</p>}
+        {next && <p className="text-[10px] text-brand-live mt-1.5">Next up: {a.hint}</p>}
       </div>
     </div>
   );
