@@ -58,6 +58,7 @@ const LANGUAGE_COLORS: Record<string, string> = {
 const FALLBACK_LANGUAGE_COLORS = ["#2CBB5D", "#E9A23B", "#E5484D", "#3B82E9", "#B25CE0", "#3BC7E9"];
 
 export default function ProgressPanel() {
+  const [platform, setPlatform] = useState<"leetcode" | "gfg" | "hackerrank">("leetcode");
   const [data, setData] = useState<ProgressOut | null>(null);
   const [loading, setLoading] = useState(true);
   const [github, setGithub] = useState<GithubStatsOut | null>(null);
@@ -84,53 +85,229 @@ export default function ProgressPanel() {
       .finally(() => setGithubLoading(false));
   }, [data?.github_connected]);
 
+  const { solved, total_questions } = data ?? {};
+
+  return (
+    <div className="space-y-5">
+      <div className="glass rounded-2xl p-1.5 flex items-center gap-1 w-fit">
+        {(
+          [
+            { key: "leetcode", label: "LeetCode" },
+            { key: "gfg", label: "GeeksforGeeks" },
+            { key: "hackerrank", label: "HackerRank" },
+          ] as const
+        ).map((p) => (
+          <button
+            key={p.key}
+            onClick={() => setPlatform(p.key)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              platform === p.key
+                ? "bg-brand-live text-[#0A0A0C]"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {platform === "gfg" && <GfgProgressSection />}
+      {platform === "hackerrank" && <HackerRankProgressSection />}
+
+      {platform === "leetcode" && (
+        <>
+          {loading ? (
+            <p className="text-sm text-text-muted py-10 text-center">Loading progress…</p>
+          ) : !data ? (
+            <div className="glass rounded-2xl p-8 text-center">
+              <p className="text-sm text-text-secondary mb-1">Couldn't load your progress right now.</p>
+            </div>
+          ) : (
+            <>
+              {!data.github_connected && <GithubConnectCard onConnected={load} />}
+              {data.github_connected && (githubLoading || github) && (
+                <GithubStatsSection stats={github} loading={githubLoading} />
+              )}
+
+              {!data.connected ? (
+                <div className="glass rounded-2xl p-8 text-center">
+                  <p className="text-sm text-text-secondary mb-1">
+                    {data.username
+                      ? "Couldn't reach LeetCode for that profile right now."
+                      : "Connect your LeetCode username in Settings to see your progress here."}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
+                    <SolvedRing
+                      solved={solved ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
+                      totalQuestions={total_questions ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
+                      attempting={data.attempting}
+                    />
+                    <ProfileCard data={data} />
+                  </div>
+
+                  <SubmissionHeatmap
+                    calendar={data.submission_calendar}
+                    totalSubmissions={data.total_submissions_past_year}
+                    activeDays={data.total_active_days}
+                    maxStreak={data.max_streak}
+                  />
+                </>
+              )}
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+type GfgProgressOut = {
+  connected: boolean;
+  username?: string | null;
+  coding_score: number;
+  institute_rank?: string | null;
+  solved: { school: number; basic: number; easy: number; medium: number; hard: number; total: number } | null;
+};
+
+function GfgProgressSection() {
+  const [data, setData] = useState<GfgProgressOut | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<GfgProgressOut>("/api/gamification/progress/gfg")
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, []);
+
   if (loading) {
-    return <p className="text-sm text-text-muted py-10 text-center">Loading progress…</p>;
+    return <p className="text-sm text-text-muted py-10 text-center">Loading GeeksforGeeks progress…</p>;
   }
 
-  if (!data) {
+  if (!data || !data.connected) {
     return (
       <div className="glass rounded-2xl p-8 text-center">
-        <p className="text-sm text-text-secondary mb-1">Couldn't load your progress right now.</p>
+        <p className="text-sm text-text-secondary mb-1">
+          {data?.username
+            ? "Couldn't reach GeeksforGeeks for that profile right now."
+            : "Connect your GeeksforGeeks ID in Settings to see your progress here."}
+        </p>
       </div>
     );
   }
 
-  const { solved, total_questions } = data;
+  const solved = data.solved ?? { school: 0, basic: 0, easy: 0, medium: 0, hard: 0, total: 0 };
+  const buckets: { label: string; value: number; color: string }[] = [
+    { label: "School", value: solved.school, color: "#8A8F98" },
+    { label: "Basic", value: solved.basic, color: "#3BC7E9" },
+    { label: "Easy", value: solved.easy, color: EASY_COLOR },
+    { label: "Medium", value: solved.medium, color: MEDIUM_COLOR },
+    { label: "Hard", value: solved.hard, color: HARD_COLOR },
+  ];
+  const maxBucket = Math.max(1, ...buckets.map((b) => b.value));
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
+      <div className="glass rounded-2xl p-5 min-w-[220px]">
+        <p className="font-display font-semibold text-text-primary mb-1">{data.username}</p>
+        {data.institute_rank && (
+          <p className="text-xs text-text-muted mb-3">Institute rank #{data.institute_rank}</p>
+        )}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <GithubMiniStat label="Coding score" value={data.coding_score} />
+          <GithubMiniStat label="Problems solved" value={solved.total} />
+        </div>
+      </div>
+      <div className="glass rounded-2xl p-5">
+        <p className="text-xs text-text-muted uppercase tracking-wide mb-3">Solved by difficulty</p>
+        <div className="space-y-2.5">
+          {buckets.map((b) => (
+            <div key={b.label} className="flex items-center gap-3">
+              <span className="text-xs text-text-secondary w-16 shrink-0">{b.label}</span>
+              <div className="flex-1 h-2.5 rounded-full bg-white/[0.06] overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${(b.value / maxBucket) * 100}%`, background: b.color }}
+                />
+              </div>
+              <span className="text-xs text-text-muted w-10 text-right shrink-0">{b.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type HackerRankProgressOut = {
+  connected: boolean;
+  username?: string | null;
+  total_stars: number;
+  badges_count: number;
+  badges: { name: string; stars: number; solved: number }[];
+};
+
+function HackerRankProgressSection() {
+  const [data, setData] = useState<HackerRankProgressOut | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<HackerRankProgressOut>("/api/gamification/progress/hackerrank")
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <p className="text-sm text-text-muted py-10 text-center">Loading HackerRank progress…</p>;
+  }
+
+  if (!data || !data.connected) {
+    return (
+      <div className="glass rounded-2xl p-8 text-center">
+        <p className="text-sm text-text-secondary mb-1">
+          {data?.username
+            ? "Couldn't reach HackerRank for that profile right now."
+            : "Connect your HackerRank ID in Settings to see your progress here."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
-      {!data.github_connected && <GithubConnectCard onConnected={load} />}
-      {data.github_connected && (githubLoading || github) && (
-        <GithubStatsSection stats={github} loading={githubLoading} />
-      )}
-
-      {!data.connected ? (
-        <div className="glass rounded-2xl p-8 text-center">
-          <p className="text-sm text-text-secondary mb-1">
-            {data.username
-              ? "Couldn't reach LeetCode for that profile right now."
-              : "Connect your LeetCode username in Settings to see your progress here."}
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
-            <SolvedRing
-              solved={solved ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
-              totalQuestions={total_questions ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
-              attempting={data.attempting}
-            />
-            <ProfileCard data={data} />
+      <div className="glass rounded-2xl p-5 flex items-center gap-6">
+        <div>
+          <p className="font-display font-semibold text-text-primary mb-1">{data.username}</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <GithubMiniStat label="Total stars" value={data.total_stars} />
+            <GithubMiniStat label="Badges" value={data.badges_count} />
           </div>
+        </div>
+      </div>
 
-          <SubmissionHeatmap
-            calendar={data.submission_calendar}
-            totalSubmissions={data.total_submissions_past_year}
-            activeDays={data.total_active_days}
-            maxStreak={data.max_streak}
-          />
-        </>
+      {data.badges.length === 0 ? (
+        <p className="text-sm text-text-muted">No public badges yet.</p>
+      ) : (
+        <div className="glass rounded-2xl p-5">
+          <p className="text-xs text-text-muted uppercase tracking-wide mb-3">Badges</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {data.badges.map((b) => (
+              <div key={b.name} className="glass rounded-lg px-3 py-2.5">
+                <p className="text-sm text-text-primary truncate" title={b.name}>
+                  {b.name}
+                </p>
+                <p className="text-xs text-text-muted mt-0.5">
+                  {"★".repeat(Math.max(0, Math.min(5, b.stars)))}
+                  {"☆".repeat(Math.max(0, 5 - b.stars))}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
