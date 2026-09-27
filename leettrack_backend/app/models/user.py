@@ -73,6 +73,31 @@ class StudentProfile(Base):
         DateTime, nullable=True
     )
 
+    # GeeksforGeeks — same "connect once, weekend-gated after" pattern as
+    # leetcode_username (see api/routers/students.py). Cached via
+    # services/gfg_profile.py; unofficial/best-effort, same caveats as
+    # the LeetCode integration.
+    gfg_username: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    gfg_problems_solved: Mapped[int] = mapped_column(default=0)
+    gfg_coding_score: Mapped[int] = mapped_column(default=0)
+    gfg_school_solved: Mapped[int] = mapped_column(default=0)
+    gfg_basic_solved: Mapped[int] = mapped_column(default=0)
+    gfg_easy_solved: Mapped[int] = mapped_column(default=0)
+    gfg_medium_solved: Mapped[int] = mapped_column(default=0)
+    gfg_hard_solved: Mapped[int] = mapped_column(default=0)
+    gfg_stats_updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # HackerRank — same pattern again, via services/hackerrank_profile.py
+    # (HackerRank's public badges endpoint: stars per badge/track).
+    hackerrank_username: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    hackerrank_total_stars: Mapped[int] = mapped_column(default=0)
+    hackerrank_badges_count: Mapped[int] = mapped_column(default=0)
+    hackerrank_stats_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+
     theme: Mapped[Theme] = mapped_column(Enum(Theme), default=Theme.dark)
     notify_new_assignment: Mapped[bool] = mapped_column(default=True)
     notify_deadline: Mapped[bool] = mapped_column(default=True)

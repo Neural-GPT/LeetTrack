@@ -1,5 +1,11 @@
 from app.models.analytics import DailyAnalytics  # noqa: F401
 from app.models.assignment import Assignment, AssignmentTarget, Problem  # noqa: F401
+from app.models.contest import ContestAttempt  # noqa: F401
+from app.models.custom_question import (  # noqa: F401
+    CustomQuestion,
+    CustomQuestionTarget,
+    CustomSubmission,
+)
 from app.models.gamification import AchievementUnlock, WeeklyGoal  # noqa: F401
 from app.models.poll import Poll, PollResult, PollVote  # noqa: F401
 from app.models.submission import Submission  # noqa: F401

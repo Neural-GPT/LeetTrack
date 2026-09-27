@@ -12,7 +12,7 @@ from app.models.enums import Role, SubmissionStatus
 from app.models.submission import Submission
 from app.models.system import Notification
 from app.models.user import StudentProfile, User
-from app.services import leetcode_stats
+from app.services import gfg_profile, hackerrank_profile, leetcode_stats
 from app.services.activity_log import log_event
 from app.services.notifications import notify_display_name_changed
 from app.services.submission_pipeline import poll_pending_submissions
@@ -27,6 +27,8 @@ class DashboardResponse(BaseModel):
     section: str | None
     leetcode_username: str | None
     github_username: str | None
+    gfg_username: str | None
+    hackerrank_username: str | None
     current_streak: int
     problems_solved: int
     assignment_completion_rate: float
@@ -64,6 +66,10 @@ def my_dashboard(
         section=profile.section.name if profile and profile.section else None,
         leetcode_username=profile.leetcode_username if profile else None,
         github_username=profile.github_username if profile and profile.github_username else None,
+        gfg_username=profile.gfg_username if profile and profile.gfg_username else None,
+        hackerrank_username=(
+            profile.hackerrank_username if profile and profile.hackerrank_username else None
+        ),
         current_streak=profile.current_streak if profile else 0,
         problems_solved=solved,
         assignment_completion_rate=completion_rate,
@@ -136,6 +142,8 @@ class SettingsUpdate(BaseModel):
     theme: str | None = None
     leetcode_username: str | None = None
     github_username: str | None = None
+    gfg_username: str | None = None
+    hackerrank_username: str | None = None
     full_name: str | None = None
     notify_new_assignment: bool | None = None
     notify_deadline: bool | None = None
@@ -150,7 +158,16 @@ class SettingsUpdate(BaseModel):
 # weekend-only, with no "first connect is free" exemption like
 # leetcode_username gets below. Everything else in SettingsUpdate
 # (theme, notification toggles) is unrestricted and can change any day.
-WEEKEND_GATED_FIELDS = {"leetcode_username", "full_name", "github_username"}
+# gfg_username / hackerrank_username get the same "first connect is
+# free" exemption as leetcode_username — see is_first_gfg_connect /
+# is_first_hackerrank_connect below.
+WEEKEND_GATED_FIELDS = {
+    "leetcode_username",
+    "full_name",
+    "github_username",
+    "gfg_username",
+    "hackerrank_username",
+}
 
 
 @router.patch("/me/settings")
@@ -170,11 +187,17 @@ def update_settings(
     # username is weekend-gated, same as display name.
     is_first_leetcode_connect = "leetcode_username" in updates and not profile.leetcode_username
     is_first_github_connect = "github_username" in updates and not profile.github_username
+    is_first_gfg_connect = "gfg_username" in updates and not profile.gfg_username
+    is_first_hackerrank_connect = (
+        "hackerrank_username" in updates and not profile.hackerrank_username
+    )
     gated_fields_touched = {
         field for field in updates
         if field in WEEKEND_GATED_FIELDS
         and not (field == "leetcode_username" and is_first_leetcode_connect)
         and not (field == "github_username" and is_first_github_connect)
+        and not (field == "gfg_username" and is_first_gfg_connect)
+        and not (field == "hackerrank_username" and is_first_hackerrank_connect)
     }
     if gated_fields_touched and not is_ist_weekend():
         raise HTTPException(403, WEEKEND_PROFILE_CHANGE_ERROR)
@@ -188,6 +211,26 @@ def update_settings(
         )
         if taken:
             raise HTTPException(400, "That LeetCode username is already linked to another account.")
+
+    if "gfg_username" in updates and updates["gfg_username"]:
+        taken = db.scalar(
+            select(StudentProfile).where(
+                StudentProfile.gfg_username == updates["gfg_username"],
+                StudentProfile.user_id != user.id,
+            )
+        )
+        if taken:
+            raise HTTPException(400, "That GeeksforGeeks username is already linked to another account.")
+
+    if "hackerrank_username" in updates and updates["hackerrank_username"]:
+        taken = db.scalar(
+            select(StudentProfile).where(
+                StudentProfile.hackerrank_username == updates["hackerrank_username"],
+                StudentProfile.user_id != user.id,
+            )
+        )
+        if taken:
+            raise HTTPException(400, "That HackerRank username is already linked to another account.")
 
     old_full_name = profile.full_name
     new_full_name = updates.get("full_name")
@@ -206,6 +249,16 @@ def update_settings(
         log_event(
             db, user.id, "leetcode_username_changed",
             meta={"to": updates["leetcode_username"]},
+        )
+    if "gfg_username" in updates:
+        log_event(
+            db, user.id, "gfg_username_changed",
+            meta={"to": updates["gfg_username"]},
+        )
+    if "hackerrank_username" in updates:
+        log_event(
+            db, user.id, "hackerrank_username_changed",
+            meta={"to": updates["hackerrank_username"]},
         )
 
     return {"updated": True}
@@ -290,6 +343,71 @@ def my_leetcode_score(
         total_solved=counts.total,
         score=counts.score,
     )
+
+
+class PlatformScoreOut(BaseModel):
+    platform: str
+    connected: bool
+    username: str | None = None
+    score: int = 0
+    # Short human-readable breakdown line, e.g. "12 easy · 5 medium ·
+    # 1 hard" or "23 stars · 6 badges" — platforms score very
+    # differently, so this is deliberately free-text rather than a
+    # rigid difficulty struct like LeetCodeScoreOut has.
+    detail: str = ""
+
+
+@router.get("/me/score", response_model=PlatformScoreOut)
+def my_platform_score(
+    platform: str = "leetcode",
+    user: User = Depends(require_role(Role.student)),
+    db: Session = Depends(get_db),
+):
+    """
+    Generalized version of /me/leetcode-score that also covers
+    GeeksforGeeks and HackerRank — powers the sidebar score circle's
+    dropdown (see StudentSidebar.tsx), which lets a student flip
+    between the three platforms they've connected.
+    """
+    profile = db.scalar(select(StudentProfile).where(StudentProfile.user_id == user.id))
+
+    if platform == "leetcode":
+        if not profile or not profile.leetcode_username:
+            return PlatformScoreOut(platform=platform, connected=False)
+        counts = leetcode_stats.get_cached_or_refresh(db, profile)
+        return PlatformScoreOut(
+            platform=platform,
+            connected=True,
+            username=profile.leetcode_username,
+            score=counts.score,
+            detail=f"{counts.easy} easy · {counts.medium} medium · {counts.hard} hard",
+        )
+
+    if platform == "gfg":
+        if not profile or not profile.gfg_username:
+            return PlatformScoreOut(platform=platform, connected=False)
+        stats = gfg_profile.get_cached_or_refresh(db, profile)
+        return PlatformScoreOut(
+            platform=platform,
+            connected=True,
+            username=profile.gfg_username,
+            score=stats.score,
+            detail=f"{stats.solved.total} problems solved · coding score {stats.coding_score}",
+        )
+
+    if platform == "hackerrank":
+        if not profile or not profile.hackerrank_username:
+            return PlatformScoreOut(platform=platform, connected=False)
+        stats = hackerrank_profile.get_cached_or_refresh(db, profile)
+        return PlatformScoreOut(
+            platform=platform,
+            connected=True,
+            username=profile.hackerrank_username,
+            score=stats.score,
+            detail=f"{stats.total_stars} stars · {stats.badges_count} badges",
+        )
+
+    raise HTTPException(400, "platform must be one of: leetcode, gfg, hackerrank.")
 
 
 class OnlineCountOut(BaseModel):

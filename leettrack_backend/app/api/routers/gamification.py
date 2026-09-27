@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.models.enums import Role
 from app.models.user import StudentProfile, User
 from app.services import github_stats, leetcode_profile, leetcode_stats
+from app.services import gfg_profile, hackerrank_profile
 from app.services.gamification import (
     AchievementDef,
     build_achievement_context,
@@ -280,6 +281,108 @@ def get_github_stats(
         total_forks=gh.total_forks,
         top_repos=[RepoStatOut(**r.__dict__) for r in gh.top_repos],
         language_breakdown=gh.language_breakdown,
+    )
+
+
+class GfgSolvedOut(BaseModel):
+    school: int
+    basic: int
+    easy: int
+    medium: int
+    hard: int
+    total: int
+
+
+class GfgProgressOut(BaseModel):
+    connected: bool
+    username: str | None = None
+    coding_score: int = 0
+    institute_rank: str | None = None
+    solved: GfgSolvedOut | None = None
+
+
+@router.get("/progress/gfg", response_model=GfgProgressOut)
+def get_gfg_progress(
+    user: User = Depends(require_role(Role.student)), db: Session = Depends(get_db)
+):
+    """Powers the Achievements page's Progress tab when the GeeksforGeeks
+    platform tab is selected — sourced from services/gfg_profile.py."""
+    profile = _get_profile(db, user)
+    if not profile.gfg_username:
+        return GfgProgressOut(connected=False)
+
+    stats = gfg_profile.fetch_gfg_stats(profile.gfg_username)
+    if stats is None:
+        # Fall back to whatever's cached on the profile rather than a
+        # hard failure — same spirit as leetcode_stats' cache fallback.
+        cached = gfg_profile.get_cached_or_refresh(db, profile)
+        return GfgProgressOut(
+            connected=bool(cached.solved.total or cached.coding_score),
+            username=profile.gfg_username,
+            coding_score=cached.coding_score,
+            solved=GfgSolvedOut(
+                school=cached.solved.school, basic=cached.solved.basic,
+                easy=cached.solved.easy, medium=cached.solved.medium,
+                hard=cached.solved.hard, total=cached.solved.total,
+            ),
+        )
+
+    return GfgProgressOut(
+        connected=True,
+        username=stats.username,
+        coding_score=stats.coding_score,
+        institute_rank=stats.institute_rank,
+        solved=GfgSolvedOut(
+            school=stats.solved.school, basic=stats.solved.basic,
+            easy=stats.solved.easy, medium=stats.solved.medium,
+            hard=stats.solved.hard, total=stats.solved.total,
+        ),
+    )
+
+
+class HackerRankBadgeOut(BaseModel):
+    name: str
+    stars: int
+    solved: int
+
+
+class HackerRankProgressOut(BaseModel):
+    connected: bool
+    username: str | None = None
+    total_stars: int = 0
+    badges_count: int = 0
+    badges: list[HackerRankBadgeOut] = Field(default_factory=list)
+
+
+@router.get("/progress/hackerrank", response_model=HackerRankProgressOut)
+def get_hackerrank_progress(
+    user: User = Depends(require_role(Role.student)), db: Session = Depends(get_db)
+):
+    """Powers the Achievements page's Progress tab when the HackerRank
+    platform tab is selected — sourced from services/hackerrank_profile.py."""
+    profile = _get_profile(db, user)
+    if not profile.hackerrank_username:
+        return HackerRankProgressOut(connected=False)
+
+    stats = hackerrank_profile.fetch_hackerrank_stats(profile.hackerrank_username)
+    if stats is None:
+        cached = hackerrank_profile.get_cached_or_refresh(db, profile)
+        return HackerRankProgressOut(
+            connected=bool(cached.total_stars or cached.badges_count),
+            username=profile.hackerrank_username,
+            total_stars=cached.total_stars,
+            badges_count=cached.badges_count,
+        )
+
+    return HackerRankProgressOut(
+        connected=True,
+        username=stats.username,
+        total_stars=stats.total_stars,
+        badges_count=stats.badges_count,
+        badges=[
+            HackerRankBadgeOut(name=b.name, stars=b.stars, solved=b.solved)
+            for b in stats.badges
+        ],
     )
 
 

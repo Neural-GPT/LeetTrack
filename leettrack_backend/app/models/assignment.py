@@ -19,6 +19,20 @@ class Problem(Base):
     difficulty: Mapped[Difficulty] = mapped_column(Enum(Difficulty))
     tags: Mapped[str] = mapped_column(String(300), default="")  # comma-separated
 
+    # AI-generated "well-optimized" reference solution, used by the
+    # Contest Simulator's judge (see services/contest_simulator.py).
+    # LeetCode's real editorial solutions are paywalled and there's no
+    # public API for them, so instead of scraping something we can't
+    # reliably or legitimately access, the reference solution is
+    # generated once by the AI assistant (a dedicated prompt template —
+    # see REFERENCE_SOLUTION_PROMPT in services/ai_assistant.py) and
+    # cached here so every student who draws this problem reuses it
+    # rather than re-generating it each time.
+    reference_solution: Mapped[str] = mapped_column(Text, default="")
+    reference_solution_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+
 
 class Assignment(Base):
     __tablename__ = "assignments"

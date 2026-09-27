@@ -19,6 +19,7 @@ from app.api.routers import (
     assistant,
     auth,
     chat,
+    custom_questions,
     data_center,
     feedback,
     gamification,
@@ -28,6 +29,7 @@ from app.api.routers import (
     sections,
     settings as settings_router,
     site_analytics,
+    student_analytics,
     students,
     teacher,
 )
@@ -76,6 +78,63 @@ def _ensure_site_settings_columns() -> None:
 
 
 _ensure_site_settings_columns()
+
+
+def _ensure_student_profile_platform_columns() -> None:
+    """
+    Same rationale as _ensure_site_settings_columns() above: backfills
+    the GeeksforGeeks and HackerRank columns added to `student_profiles`
+    for any database that already had the table before those existed.
+    Idempotent, safe on every startup. In production, prefer a real
+    Alembic migration.
+    """
+    insp = inspect(engine)
+    if "student_profiles" not in insp.get_table_names():
+        return
+    existing = {c["name"] for c in insp.get_columns("student_profiles")}
+    additions = {
+        "gfg_username": "VARCHAR(50)",
+        "gfg_problems_solved": "INTEGER DEFAULT 0",
+        "gfg_coding_score": "INTEGER DEFAULT 0",
+        "gfg_school_solved": "INTEGER DEFAULT 0",
+        "gfg_basic_solved": "INTEGER DEFAULT 0",
+        "gfg_easy_solved": "INTEGER DEFAULT 0",
+        "gfg_medium_solved": "INTEGER DEFAULT 0",
+        "gfg_hard_solved": "INTEGER DEFAULT 0",
+        "gfg_stats_updated_at": "DATETIME",
+        "hackerrank_username": "VARCHAR(50)",
+        "hackerrank_total_stars": "INTEGER DEFAULT 0",
+        "hackerrank_badges_count": "INTEGER DEFAULT 0",
+        "hackerrank_stats_updated_at": "DATETIME",
+    }
+    with engine.begin() as conn:
+        for column, ddl in additions.items():
+            if column not in existing:
+                conn.execute(text(f"ALTER TABLE student_profiles ADD COLUMN {column} {ddl}"))
+
+
+_ensure_student_profile_platform_columns()
+
+
+def _ensure_problem_columns() -> None:
+    """Backfills the reference-solution cache columns added to `problems`
+    for the Contest Simulator — same rationale as the other _ensure_*
+    functions above."""
+    insp = inspect(engine)
+    if "problems" not in insp.get_table_names():
+        return
+    existing = {c["name"] for c in insp.get_columns("problems")}
+    additions = {
+        "reference_solution": "TEXT",
+        "reference_solution_updated_at": "DATETIME",
+    }
+    with engine.begin() as conn:
+        for column, ddl in additions.items():
+            if column not in existing:
+                conn.execute(text(f"ALTER TABLE problems ADD COLUMN {column} {ddl}"))
+
+
+_ensure_problem_columns()
 
 
 def _migrate_default_accent_color() -> None:
@@ -441,6 +500,8 @@ app.include_router(chat.teacher_broadcast_router)
 app.include_router(gamification.router)
 app.include_router(polls.router)
 app.include_router(site_analytics.router)
+app.include_router(student_analytics.router)
+app.include_router(custom_questions.router)
 
 @app.get("/")
 def root():
