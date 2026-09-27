@@ -10,6 +10,8 @@ type Dashboard = {
   section: string | null;
   leetcode_username: string | null;
   github_username: string | null;
+  gfg_username: string | null;
+  hackerrank_username: string | null;
 };
 
 const NOTIFICATION_TOGGLES: { key: string; label: string }[] = [
@@ -35,10 +37,14 @@ function SettingsContent() {
   const [profile, setProfile] = useState<Dashboard | null>(null);
   const [leetcodeUsername, setLeetcodeUsername] = useState("");
   const [githubUsername, setGithubUsername] = useState("");
+  const [gfgUsername, setGfgUsername] = useState("");
+  const [hackerrankUsername, setHackerrankUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [original, setOriginal] = useState({
     leetcode_username: "",
     github_username: "",
+    gfg_username: "",
+    hackerrank_username: "",
     full_name: "",
   });
   const [toggles, setToggles] = useState<Record<string, boolean>>({
@@ -60,6 +66,10 @@ function SettingsContent() {
   const leetcodeEditable = weekend || !leetcodeAlreadyLinked;
   const githubAlreadyLinked = original.github_username !== "";
   const githubEditable = weekend || !githubAlreadyLinked;
+  const gfgAlreadyLinked = original.gfg_username !== "";
+  const gfgEditable = weekend || !gfgAlreadyLinked;
+  const hackerrankAlreadyLinked = original.hackerrank_username !== "";
+  const hackerrankEditable = weekend || !hackerrankAlreadyLinked;
 
   useEffect(() => {
     api
@@ -68,10 +78,14 @@ function SettingsContent() {
         setProfile(d);
         setLeetcodeUsername(d.leetcode_username ?? "");
         setGithubUsername(d.github_username ?? "");
+        setGfgUsername(d.gfg_username ?? "");
+        setHackerrankUsername(d.hackerrank_username ?? "");
         setFullName(d.full_name ?? "");
         setOriginal({
           leetcode_username: d.leetcode_username ?? "",
           github_username: d.github_username ?? "",
+          gfg_username: d.gfg_username ?? "",
+          hackerrank_username: d.hackerrank_username ?? "",
           full_name: d.full_name ?? "",
         });
       })
@@ -103,6 +117,12 @@ function SettingsContent() {
       if (githubEditable && githubUsername !== original.github_username) {
         payload.github_username = githubUsername || null;
       }
+      if (gfgEditable && gfgUsername !== original.gfg_username) {
+        payload.gfg_username = gfgUsername || null;
+      }
+      if (hackerrankEditable && hackerrankUsername !== original.hackerrank_username) {
+        payload.hackerrank_username = hackerrankUsername || null;
+      }
       if (weekend && fullName.trim() && fullName !== original.full_name) {
         payload.full_name = fullName.trim();
       }
@@ -110,6 +130,8 @@ function SettingsContent() {
       setOriginal({
         leetcode_username: leetcodeUsername,
         github_username: githubUsername,
+        gfg_username: gfgUsername,
+        hackerrank_username: hackerrankUsername,
         full_name: fullName,
       });
       setSaved(true);
@@ -136,6 +158,12 @@ function SettingsContent() {
           {githubAlreadyLinked
             ? " Same for your GitHub username — it's already connected, so changing it is weekend-only too."
             : " You can still connect your GitHub account below any day — that only gets weekend-gated once it's set."}
+          {gfgAlreadyLinked
+            ? " Your GeeksforGeeks ID is already connected, so changing it is weekend-only too."
+            : " You can connect your GeeksforGeeks ID below any day — that only gets weekend-gated once it's set."}
+          {hackerrankAlreadyLinked
+            ? " Your HackerRank ID is already connected, so changing it is weekend-only too."
+            : " You can connect your HackerRank ID below any day — that only gets weekend-gated once it's set."}
           {" "}Notification preferences below can still be changed any day.
         </div>
       )}
@@ -177,6 +205,36 @@ function SettingsContent() {
           onChange={(e) => setLeetcodeUsername(e.target.value)}
           disabled={!leetcodeEditable}
           placeholder="your-leetcode-username"
+          className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </section>
+
+      <section className="glass rounded-2xl p-7 mb-6">
+        <p className="text-xs text-text-muted uppercase tracking-wide mb-2">GeeksforGeeks account</p>
+        <p className="text-sm text-text-secondary mb-4">
+          Powers your GfG score and progress on the Achievements page.
+          {!gfgAlreadyLinked && " Connecting it for the first time works any day."}
+        </p>
+        <input
+          value={gfgUsername}
+          onChange={(e) => setGfgUsername(e.target.value)}
+          disabled={!gfgEditable}
+          placeholder="your-gfg-username"
+          className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </section>
+
+      <section className="glass rounded-2xl p-7 mb-6">
+        <p className="text-xs text-text-muted uppercase tracking-wide mb-2">HackerRank account</p>
+        <p className="text-sm text-text-secondary mb-4">
+          Powers your HackerRank score (badge stars) and progress on the Achievements page.
+          {!hackerrankAlreadyLinked && " Connecting it for the first time works any day."}
+        </p>
+        <input
+          value={hackerrankUsername}
+          onChange={(e) => setHackerrankUsername(e.target.value)}
+          disabled={!hackerrankEditable}
+          placeholder="your-hackerrank-username"
           className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </section>
