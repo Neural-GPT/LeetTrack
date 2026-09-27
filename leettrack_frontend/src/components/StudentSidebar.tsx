@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -8,9 +8,40 @@ import { api } from "@/lib/api";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Assignments", icon: AssignmentIcon },
+  { href: "/custom-questions", label: "Custom Questions", icon: CustomQuestionIcon },
   { href: "/leaderboard", label: "Leaderboard", icon: LeaderboardIcon },
+  { href: "/skills", label: "Skills", icon: SkillsIcon },
   { href: "/ai-chat", label: "AI Chat", icon: ChatIcon },
 ];
+
+type Platform = "leetcode" | "gfg" | "hackerrank";
+
+const PLATFORMS: { key: Platform; label: string; short: string; usernameField: keyof DashboardShape }[] = [
+  { key: "leetcode", label: "LeetCode", short: "LC", usernameField: "leetcode_username" },
+  { key: "gfg", label: "GeeksforGeeks", short: "GFG", usernameField: "gfg_username" },
+  { key: "hackerrank", label: "HackerRank", short: "HR", usernameField: "hackerrank_username" },
+];
+
+// Remembers which platform's score the student last chose to look at,
+// so the sidebar doesn't reset to LeetCode every page load.
+const PLATFORM_STORAGE_KEY = "leettrack_score_platform";
+
+type DashboardShape = {
+  full_name: string;
+  email: string;
+  leetcode_username: string | null;
+  github_username: string | null;
+  gfg_username: string | null;
+  hackerrank_username: string | null;
+};
+
+type PlatformScore = {
+  platform: string;
+  connected: boolean;
+  username: string | null;
+  score: number;
+  detail: string;
+};
 
 /**
  * Icon-only rail, permanently folded — no expand/collapse toggle.
@@ -22,45 +53,68 @@ const NAV_ITEMS = [
 export default function StudentSidebar() {
   const pathname = usePathname();
   const { logout } = useAuth();
-  const [name, setName] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
-  const [leetcodeUsername, setLeetcodeUsername] = useState<string | null>(null);
-  const [githubUsername, setGithubUsername] = useState<string | null>(null);
-  const [leetcodeScore, setLeetcodeScore] = useState<number | null>(null);
-  const [hasLeetcode, setHasLeetcode] = useState(true);
+  const [dashboard, setDashboard] = useState<DashboardShape | null>(null);
+  const [activePlatform, setActivePlatform] = useState<Platform>("leetcode");
+  const [score, setScore] = useState<PlatformScore | null>(null);
+  const [scoreLoading, setScoreLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    api
-      .get<{
-        full_name: string;
-        email: string;
-        leetcode_username: string | null;
-        github_username: string | null;
-      }>("/api/students/me/dashboard")
-      .then((d) => {
-        setName(d.full_name);
-        setEmail(d.email);
-        setLeetcodeUsername(d.leetcode_username);
-        setGithubUsername(d.github_username);
-        setHasLeetcode(!!d.leetcode_username);
-      })
-      .catch(() => setName(null));
+    const stored = typeof window !== "undefined" ? localStorage.getItem(PLATFORM_STORAGE_KEY) : null;
+    if (stored === "leetcode" || stored === "gfg" || stored === "hackerrank") {
+      setActivePlatform(stored);
+    }
 
     api
-      .get<{ score: number }>("/api/students/me/leetcode-score")
-      .then((s) => setLeetcodeScore(s.score))
-      .catch(() => setLeetcodeScore(null));
+      .get<DashboardShape>("/api/students/me/dashboard")
+      .then(setDashboard)
+      .catch(() => setDashboard(null));
   }, []);
 
+  useEffect(() => {
+    setScoreLoading(true);
+    api
+      .get<PlatformScore>(`/api/students/me/score?platform=${activePlatform}`)
+      .then(setScore)
+      .catch(() => setScore(null))
+      .finally(() => setScoreLoading(false));
+  }, [activePlatform]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [menuOpen]);
+
+  function selectPlatform(p: Platform) {
+    setActivePlatform(p);
+    localStorage.setItem(PLATFORM_STORAGE_KEY, p);
+    setMenuOpen(false);
+  }
+
+  const name = dashboard?.full_name ?? null;
   const initial = name ? name.trim().charAt(0).toUpperCase() : "?";
   const profileTooltip = [
     name,
-    email,
-    leetcodeUsername ? `LeetCode: ${leetcodeUsername}` : "LeetCode: not connected",
-    githubUsername ? `github.com/${githubUsername}` : "GitHub: not connected",
+    dashboard?.email,
+    dashboard?.leetcode_username ? `LeetCode: ${dashboard.leetcode_username}` : "LeetCode: not connected",
+    dashboard?.github_username ? `github.com/${dashboard.github_username}` : "GitHub: not connected",
+    dashboard?.gfg_username ? `GfG: ${dashboard.gfg_username}` : "GeeksforGeeks: not connected",
+    dashboard?.hackerrank_username
+      ? `HackerRank: ${dashboard.hackerrank_username}`
+      : "HackerRank: not connected",
   ]
     .filter(Boolean)
     .join("\n");
+
+  const activeMeta = PLATFORMS.find((p) => p.key === activePlatform)!;
+  const hasConnected = score?.connected ?? false;
 
   return (
     <aside className="fixed left-4 top-4 bottom-4 z-20 w-[4.25rem] glass rounded-2xl flex flex-col items-center p-3">
@@ -90,26 +144,56 @@ export default function StudentSidebar() {
         })}
       </nav>
 
-      <div className="flex-1 flex items-center justify-center w-full">
-        <Link
-          href={hasLeetcode ? "/dashboard" : "/settings"}
+      <div className="flex-1 flex items-center justify-center w-full relative" ref={menuRef}>
+        <button
+          type="button"
+          onClick={() => setMenuOpen((o) => !o)}
           title={
-            hasLeetcode
-              ? `LeetCode score: ${leetcodeScore ?? "…"} (1×Easy + 2×Medium + 3×Hard)`
-              : "Connect your LeetCode account in Settings"
+            hasConnected
+              ? `${activeMeta.label} score: ${score?.score ?? "…"}${score?.detail ? ` (${score.detail})` : ""} — click to switch platform`
+              : `${activeMeta.label}: not connected — click to switch platform or connect in Settings`
           }
           className="relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
           style={{
             background: "color-mix(in srgb, var(--color-brand) 12%, transparent)",
-            boxShadow: hasLeetcode
+            boxShadow: hasConnected
               ? "0 0 12px color-mix(in srgb, var(--color-brand) 55%, transparent), inset 0 0 0 1.5px color-mix(in srgb, var(--color-brand) 60%, transparent)"
               : "inset 0 0 0 1.5px color-mix(in srgb, var(--color-brand) 25%, transparent)",
           }}
         >
-          <span className="font-display font-semibold text-[11px] text-brand-live">
-            {hasLeetcode ? (leetcodeScore ?? "…") : "+"}
+          <span className="font-display font-semibold text-[10px] text-brand-live leading-tight text-center">
+            {scoreLoading ? "…" : hasConnected ? score?.score : activeMeta.short}
           </span>
-        </Link>
+        </button>
+
+        {menuOpen && (
+          <div className="absolute left-[3.25rem] bottom-0 z-30 w-48 glass rounded-xl p-1.5 shadow-lg">
+            {PLATFORMS.map((p) => {
+              const connected = !!dashboard?.[p.usernameField];
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => selectPlatform(p.key)}
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs transition-colors ${
+                    p.key === activePlatform
+                      ? "bg-brand-live-15 text-brand-live"
+                      : "text-text-secondary hover:text-text-primary hover:bg-white/5"
+                  }`}
+                >
+                  <span>{p.label}</span>
+                  <span className="text-text-muted">{connected ? "✓" : "+"}</span>
+                </button>
+              );
+            })}
+            <Link
+              href="/settings"
+              onClick={() => setMenuOpen(false)}
+              className="block w-full px-2.5 py-2 rounded-lg text-left text-xs text-text-muted hover:text-text-primary hover:bg-white/5 mt-0.5 border-t border-white/10 pt-2"
+            >
+              Manage accounts →
+            </Link>
+          </div>
+        )}
       </div>
 
       <Link
@@ -167,6 +251,23 @@ function LeaderboardIcon({ active }: { active: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8}>
       <path d="M8 20V10M14 20V4M20 20v-7M2 20h20" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CustomQuestionIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8}>
+      <path d="M4 4h16v12H8l-4 4V4z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 9h6M9 12.5h4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SkillsIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8}>
+      <path d="M12 2l2.6 6.2L21 9l-5 4.4L17.4 20 12 16.6 6.6 20 8 13.4 3 9l6.4-.8L12 2z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
