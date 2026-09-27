@@ -34,6 +34,11 @@ export default function Nav() {
             Assignments
           </Link>
         )}
+        {(role === "teacher" || role === "super_admin") && (
+          <Link href="/teacher/custom-questions" className="hover:text-text-primary transition-colors">
+            Custom Questions
+          </Link>
+        )}
         {role && (
           <Link href="/leaderboard" className="hover:text-text-primary transition-colors">
             Leaderboard
