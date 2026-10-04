@@ -42,8 +42,3 @@ leettrack/
   ├── leettrack_frontend/   # Next.js 16 + TypeScript + Tailwind v4
   └── leettrack_backend/    # FastAPI + SQLAlchemy + Celery
 ```
-
-Both directories contain their own `README.md` files:
-- `leettrack_backend/README.md`: Covers auth flows, database models, the scoring engine, NVIDIA AI integration, and Celery setup.
-- `leettrack_frontend/README.md`: Covers components, custom theming, and page routes.
-
