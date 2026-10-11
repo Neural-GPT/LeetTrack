@@ -386,7 +386,7 @@ export function SuperPowersPanel() {
       if (score.trim()) payload.score = Number(score);
       if (status.trim()) payload.status = status.trim();
       await api.patch(`/api/admin/submissions/${submissionId}/override`, payload);
-      setSubMsg("Updated — this also feeds straight into the leaderboard's Assignment Score ranking.");
+      setSubMsg("Updated. This also feeds straight into the leaderboard's Assignment Score ranking.");
       // Reflect the save in the picker's own list without a re-fetch.
       setStudentSubmissions((prev) =>
         prev.map((s) =>
@@ -404,7 +404,7 @@ export function SuperPowersPanel() {
     <section className="glass rounded-2xl p-7">
       <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Super Admin overrides</p>
       <p className="text-sm text-text-secondary mb-5">
-        Direct edits that bypass normal rules (e.g. the weekend gate on profile changes) — every
+        Direct edits that bypass normal rules (e.g. the weekend gate on profile changes). Every
         override here is logged.
       </p>
 
@@ -484,7 +484,7 @@ export function SuperPowersPanel() {
       <div className="space-y-3">
         <p className="text-sm text-text-primary">Correct a submission (score / status)</p>
         <p className="text-xs text-text-muted -mt-2">
-          Pick the student, then the exact problem — no need to know a submission ID. This score
+          Pick the student, then the exact problem: no need to know a submission ID. This score
           feeds directly into the leaderboard's Assignment Score ranking.
         </p>
         <form onSubmit={handleSubmissionOverride} className="grid md:grid-cols-3 gap-2.5">
@@ -607,7 +607,7 @@ export function ChatTogglePanel() {
           <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Public chat</p>
           <p className="text-sm text-text-secondary">
             The site-wide chat room every student, teacher, and admin shares. Turning this off
-            refuses new messages for everyone — existing messages in the room stay visible.
+            refuses new messages for everyone; existing messages in the room stay visible.
           </p>
           {error && <p className="text-sm text-danger mt-2">{error}</p>}
         </div>
@@ -627,7 +627,7 @@ export function ChatTogglePanel() {
         </button>
       </div>
       <p className="text-xs text-text-muted mt-3">
-        Currently {enabled === null ? "…" : enabled ? "on — anyone can post." : "off — new messages are blocked."}
+        Currently {enabled === null ? "…" : enabled ? "on. Anyone can post." : "off. New messages are blocked."}
       </p>
     </section>
   );
@@ -694,7 +694,7 @@ function PollVotesViewer({ poll, onClose }: { poll: Poll; onClose: () => void })
       ) : votes.length === 0 ? (
         <p className="text-sm text-text-muted">
           {poll.status === "ended"
-            ? "No individual votes left to show — this poll ended more than 48 hours ago, so per-voter data has been purged. The aggregate counts above are all that's kept."
+            ? "No individual votes left to show. This poll ended more than 48 hours ago, so per-voter data has been purged. The aggregate counts above are all that's kept."
             : "No votes yet."}
         </p>
       ) : (
@@ -723,7 +723,7 @@ function PollRow({ poll }: { poll: Poll }) {
         <div className="min-w-0">
           <p className="text-sm text-text-primary leading-snug">{poll.question}</p>
           <p className="text-xs text-text-muted mt-0.5">
-            {poll.status === "active" ? "Active — " : "Ended — "}
+            {poll.status === "active" ? "Active, " : "Ended, "}
             {poll.status === "active"
               ? `closes ${new Date(poll.ends_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`
               : `closed ${new Date(poll.ends_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`}
@@ -806,7 +806,7 @@ export function PollPanel() {
         options: options.map((o) => o.trim()).filter(Boolean),
         duration_minutes: durationMinutes,
       });
-      setSuccess("Poll sent — it just landed in everyone's notification bell.");
+      setSuccess("Poll sent. It just landed in everyone's notification bell.");
       setQuestion("");
       setOptions(["", ""]);
       if (expanded) loadPolls();
@@ -822,7 +822,7 @@ export function PollPanel() {
       <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Polls</p>
       <p className="text-sm text-text-secondary mb-4">
         Sent to everyone's notification bell. Results are broadcast back to everyone once voting
-        closes — only the final counts are kept permanently; who voted for what is visible here
+        closes. Only the final counts are kept permanently; who voted for what is visible here
         for 48 hours after a poll ends, then deleted.
       </p>
 

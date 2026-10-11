@@ -150,8 +150,8 @@ export default function StudentSidebar() {
           onClick={() => setMenuOpen((o) => !o)}
           title={
             hasConnected
-              ? `${activeMeta.label} score: ${score?.score ?? "…"}${score?.detail ? ` (${score.detail})` : ""} — click to switch platform`
-              : `${activeMeta.label}: not connected — click to switch platform or connect in Settings`
+              ? `${activeMeta.label} score: ${score?.score ?? "…"}${score?.detail ? ` (${score.detail})` : ""}. Click to switch platform.`
+              : `${activeMeta.label}: not connected. Click to switch platform or connect in Settings.`
           }
           className="relative w-11 h-11 rounded-full flex items-center justify-center shrink-0"
           style={{
@@ -258,8 +258,9 @@ function LeaderboardIcon({ active }: { active: boolean }) {
 function CustomQuestionIcon({ active }: { active: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8}>
-      <path d="M4 4h16v12H8l-4 4V4z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 9h6M9 12.5h4" strokeLinecap="round" />
+      <path d="M8.5 6.5L3.5 12l5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M15.5 6.5l5 5.5-5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13.2 4.5l-2.4 15" strokeLinecap="round" />
     </svg>
   );
 }
@@ -267,7 +268,9 @@ function CustomQuestionIcon({ active }: { active: boolean }) {
 function SkillsIcon({ active }: { active: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8}>
-      <path d="M12 2l2.6 6.2L21 9l-5 4.4L17.4 20 12 16.6 6.6 20 8 13.4 3 9l6.4-.8L12 2z" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }

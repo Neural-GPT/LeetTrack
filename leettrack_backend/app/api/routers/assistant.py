@@ -145,7 +145,7 @@ def assistant_chat_stream(
     # is already committed and can't change).
     if not has_active_key(db):
         raise HTTPException(
-            503, "No NVIDIA API key is configured — add one from the Super Admin settings page."
+            503, "No NVIDIA API key is configured. Add one from the Super Admin settings page."
         )
 
     # Metadata only, no content — see AIInteractionLog docstring.

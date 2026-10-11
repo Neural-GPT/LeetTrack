@@ -135,8 +135,8 @@ function CreateAssignmentForm({
     } catch (err) {
       setProblemInfoNote(
         err instanceof ApiError
-          ? `Couldn't auto-fetch: ${err.message} — set difficulty manually.`
-          : "Couldn't auto-fetch that problem — set difficulty manually."
+          ? `Couldn't auto-fetch: ${err.message}. Set difficulty manually.`
+          : "Couldn't auto-fetch that problem. Set difficulty manually."
       );
     } finally {
       setFetchingProblemInfo(false);
@@ -221,7 +221,7 @@ function CreateAssignmentForm({
             onChange={(e) => handleStarterPick(e.target.value)}
             className="input"
           >
-            <option value="">— or just paste a LeetCode link below —</option>
+            <option value="">Or just paste a LeetCode link below</option>
             {starterProblems.map((p) => (
               <option key={p.leetcode_url} value={p.leetcode_url}>
                 {p.title} ({p.difficulty})
@@ -275,7 +275,7 @@ function CreateAssignmentForm({
             <option>Hard</option>
           </select>
           <p className="text-xs text-text-muted mt-1.5">
-            Auto-filled from the LeetCode URL above — override here if it fetched wrong.
+            Auto-filled from the LeetCode URL above. Override here if it fetched wrong.
           </p>
         </Field>
 

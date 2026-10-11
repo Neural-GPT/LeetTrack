@@ -223,7 +223,7 @@ export default function ChatBubble() {
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-2.5 space-y-3">
                 {messages.length === 0 ? (
                   <p className="text-sm text-text-muted text-center py-8">
-                    No messages yet — say hello.
+                    No messages yet. Say hello.
                   </p>
                 ) : (
                   messages.map((m) => (
@@ -260,7 +260,7 @@ export default function ChatBubble() {
               )}
               {chatEnabled === false ? (
                 <p className="text-xs text-text-muted mx-3 mb-3 px-2.5 py-2 rounded-lg bg-white/5 shrink-0">
-                  Public chat is currently turned off — only you can see this. Students and
+                  Public chat is currently turned off. Only you can see this. Students and
                   teachers can't post or see the room until you switch it back on from the Admin
                   panel.
                 </p>
@@ -290,7 +290,7 @@ export default function ChatBubble() {
             <form onSubmit={handleAnnounce} className="flex-1 flex flex-col p-3 min-h-0">
               <p className="text-xs text-text-muted mb-2 leading-relaxed shrink-0">
                 This goes straight into every student&apos;s, teacher&apos;s, and
-                admin&apos;s notification bell at once — there&apos;s no picking one
+                admin&apos;s notification bell at once. There&apos;s no picking one
                 person, that stays a Super Admin power.
               </p>
               {announceStatus && (

@@ -89,7 +89,7 @@ function AnalyticsContent() {
                   className="flex items-center justify-between text-sm"
                 >
                   <span className="text-text-primary">
-                    Section {s.section_id ?? "—"} · {s.student_count} students
+                    Section {s.section_id ?? "Unassigned"} · {s.student_count} students
                   </span>
                   <span className="text-text-secondary">
                     {s.avg_completion_rate}% complete · {s.avg_score} avg pts

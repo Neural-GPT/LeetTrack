@@ -177,7 +177,7 @@ export default function RegisterPage() {
             )}
             {devOtp && (
               <div className="mb-5 text-xs text-text-muted glass rounded-lg px-3.5 py-2.5">
-                Dev mode (no SMTP configured) — your code is{" "}
+                Dev mode (no SMTP configured), your code is{" "}
                 <span className="font-display text-text-primary">{devOtp}</span>
               </div>
             )}

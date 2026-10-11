@@ -19,7 +19,7 @@ function AchievementsContent() {
   const [tab, setTab] = useState<Tab>("progress");
 
   return (
-    <div className="max-w-5xl mx-auto pb-10">
+    <div className="max-w-5xl mx-auto pb-10 pt-16">
       <h1 className="font-display font-semibold text-2xl text-text-primary mb-1">
         Achievements
       </h1>

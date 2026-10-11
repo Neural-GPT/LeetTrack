@@ -91,7 +91,7 @@ IMPROVEMENT_SUGGESTIONS_PROMPT = """You are LeetTrack's performance analyst. You
 
 Write a short, specific improvement plan for this exact student based only on the numbers given — never invent problems, dates, or scores that are not in the data. Cover: one honest sentence on their overall trend (improving, flat, or slipping, based on the weekly numbers); which 2-3 topics need the most attention and why (low completion rate or very few attempts is a different problem — call out which one it is); and 3-4 concrete next actions, such as a topic to drill, or noticing a stalled streak.
 
-Output plain prose only, organized as short paragraphs — no markdown, no headers, no bullet symbols, no code blocks. Keep it under 200 words. Be direct and encouraging, never harsh, and never generic filler that could apply to any student."""
+Output plain prose only, organized as short paragraphs: no markdown, no headers, no bullet symbols, no code blocks, and no em dashes (write plain sentences instead). Keep it under 200 words. Be direct and encouraging, never harsh, and never generic filler that could apply to any student."""
 
 REFERENCE_SOLUTION_PROMPT = """You are an expert competitive programmer. You will be given a problem's title, difficulty, topic tags, and LeetCode URL. Write a single well-optimized, correct, idiomatic Python 3 solution to this exact problem, at the best known time/space complexity for it.
 
@@ -101,13 +101,13 @@ CONTEST_JUDGE_PROMPT = """You are LeetTrack's contest judge. You will be given a
 
 Assess: does the student's code look logically correct for this problem, including the obvious edge cases (empty input, single element, duplicates, negative numbers, etc. as applicable)? What is its approximate time/space complexity, and how does that compare to the reference? Is the code reasonably clean, or does it have real bugs (off-by-one, wrong return type, unhandled edge case, infinite loop risk)?
 
-Output ONLY a JSON object, no prose before or after, no markdown fences, with exactly these keys: "score" (integer 0-100, where 90+ means correct and near-optimal, 60-89 means correct but suboptimal or has minor issues, below 60 means likely incorrect or has a real bug), "verdict" (exactly one of "pass", "needs_work", "fail"), "complexity_estimate" (short string, your best read of the student code's complexity), and "feedback" (2-4 sentences, direct and specific to their actual code — name the bug or the missed optimization if there is one, don't just restate the reference solution's approach)."""
+Output ONLY a JSON object, no prose before or after, no markdown fences, with exactly these keys: "score" (integer 0-100, where 90+ means correct and near-optimal, 60-89 means correct but suboptimal or has minor issues, below 60 means likely incorrect or has a real bug), "verdict" (exactly one of "pass", "needs_work", "fail"), "complexity_estimate" (short string, your best read of the student code's complexity), and "feedback" (2-4 sentences in plain prose with no em dashes, direct and specific to their actual code: name the bug or the missed optimization if there is one, don't just restate the reference solution's approach)."""
 
 CUSTOM_GRADING_PROMPT = """You are a teaching assistant helping a teacher grade a coding assignment they wrote themselves. You will be given the teacher's own problem statement (and constraints, if any), the teacher's own correct reference implementation which they have confirmed is correct for THIS assignment, and one student's submitted code. There is no code execution available — assess by careful reading.
 
 Your job is to produce a *suggestion* for the teacher, not a final grade — the teacher always reviews and can override anything you say, so be specific and show your reasoning rather than just asserting a number. Compare the student's code to the teacher's reference implementation and the problem statement: does it solve the same problem correctly, including edge cases the reference handles? Does it take a different but still valid approach, or does it actually diverge from what the problem asks? Note any real bugs, missing edge cases, or requirements from the problem statement/constraints that the student's code doesn't satisfy.
 
-Output ONLY a JSON object, no prose before or after, no markdown fences, with exactly these keys: "suggested_score" (integer 0-100, to be scaled by the teacher to their own points value — 100 means fully correct and equivalent to the reference, 0 means doesn't attempt the actual problem), "suggested_feedback" (3-5 sentences, written as if speaking to the student directly, specific to their actual code — name concrete bugs or gaps if there are any, and acknowledge what they got right), and "matches_reference_approach" (boolean — true only if the student used essentially the same technique as the teacher's reference, false if they took a different valid approach or if they're simply wrong; this is informational for the teacher, not a penalty)."""
+Output ONLY a JSON object, no prose before or after, no markdown fences, with exactly these keys: "suggested_score" (integer 0-100, to be scaled by the teacher to their own points value: 100 means fully correct and equivalent to the reference, 0 means doesn't attempt the actual problem), "suggested_feedback" (3-5 sentences in plain prose with no em dashes, written as if speaking to the student directly, specific to their actual code: name concrete bugs or gaps if there are any, and acknowledge what they got right), and "matches_reference_approach" (boolean, true only if the student used essentially the same technique as the teacher's reference, false if they took a different valid approach or if they're simply wrong; this is informational for the teacher, not a penalty)."""
 
 
 def complete(
@@ -129,7 +129,7 @@ def complete(
     keys = _active_keys(db)
     if not keys:
         raise AssistantError(
-            "No NVIDIA API key is configured — add one from the Super Admin settings page."
+            "No NVIDIA API key is configured. Add one from the Super Admin settings page."
         )
 
     payload = {
@@ -241,7 +241,7 @@ def chat(
     keys = _active_keys(db)
     if not keys:
         raise AssistantError(
-            "No NVIDIA API key is configured — add one from the Super Admin settings page."
+            "No NVIDIA API key is configured. Add one from the Super Admin settings page."
         )
 
     payload = _build_payload(messages, problem_context, stream=False)
@@ -305,7 +305,7 @@ def chat_stream(
     keys = _active_keys(db)
     if not keys:
         raise AssistantError(
-            "No NVIDIA API key is configured — add one from the Super Admin settings page."
+            "No NVIDIA API key is configured. Add one from the Super Admin settings page."
         )
 
     payload = _build_payload(messages, problem_context, stream=True)

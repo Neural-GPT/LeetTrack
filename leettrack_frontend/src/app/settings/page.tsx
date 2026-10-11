@@ -151,20 +151,10 @@ function SettingsContent() {
 
       {!weekend && (
         <div className="glass rounded-2xl px-4 py-3 mb-6 text-sm text-text-secondary border border-white/10">
-          Your display name can only be changed on weekends (Saturday–Sunday, IST).
-          {leetcodeAlreadyLinked
-            ? " Your LeetCode username is already connected, so changing it is also weekend-only."
-            : " You can still connect your LeetCode account below any day — that only gets weekend-gated once it's set."}
-          {githubAlreadyLinked
-            ? " Same for your GitHub username — it's already connected, so changing it is weekend-only too."
-            : " You can still connect your GitHub account below any day — that only gets weekend-gated once it's set."}
-          {gfgAlreadyLinked
-            ? " Your GeeksforGeeks ID is already connected, so changing it is weekend-only too."
-            : " You can connect your GeeksforGeeks ID below any day — that only gets weekend-gated once it's set."}
-          {hackerrankAlreadyLinked
-            ? " Your HackerRank ID is already connected, so changing it is weekend-only too."
-            : " You can connect your HackerRank ID below any day — that only gets weekend-gated once it's set."}
-          {" "}Notification preferences below can still be changed any day.
+          Your display name can only be changed on weekends (Saturday and Sunday, IST). The same rule
+          applies to any of the accounts below once they&apos;re connected: changing an already-connected
+          username is weekend-only, but connecting one for the first time works any day. Notification
+          preferences below can still be changed any day.
         </div>
       )}
 
@@ -180,63 +170,69 @@ function SettingsContent() {
       </section>
 
       <section className="glass rounded-2xl p-7 mb-6">
-        <p className="text-xs text-text-muted uppercase tracking-wide mb-2">GitHub account</p>
-        <p className="text-sm text-text-secondary mb-4">
-          Powers the GitHub statistics and graphs on the Achievements page.
-          {!githubAlreadyLinked && " Connecting it for the first time works any day."}
+        <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Connected accounts</p>
+        <p className="text-sm text-text-secondary mb-5">
+          LeetCode powers your scoring; GeeksforGeeks, HackerRank, and GitHub each power their own stats
+          and graphs on the Achievements page.
         </p>
-        <input
-          value={githubUsername}
-          onChange={(e) => setGithubUsername(e.target.value)}
-          disabled={!githubEditable}
-          placeholder="your-github-username"
-          className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-      </section>
 
-      <section className="glass rounded-2xl p-7 mb-6">
-        <p className="text-xs text-text-muted uppercase tracking-wide mb-2">LeetCode account</p>
-        <p className="text-sm text-text-secondary mb-4">
-          Needed for LeetTrack to verify your submissions: nothing gets scored without it.
-          {!leetcodeAlreadyLinked && " Connecting it for the first time works any day."}
-        </p>
-        <input
-          value={leetcodeUsername}
-          onChange={(e) => setLeetcodeUsername(e.target.value)}
-          disabled={!leetcodeEditable}
-          placeholder="your-leetcode-username"
-          className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-      </section>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs text-text-muted uppercase tracking-wide mb-1.5">LeetCode</p>
+            <input
+              value={leetcodeUsername}
+              onChange={(e) => setLeetcodeUsername(e.target.value)}
+              disabled={!leetcodeEditable}
+              placeholder="your-leetcode-username"
+              className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            {!leetcodeAlreadyLinked && (
+              <p className="text-xs text-text-muted mt-1.5">Connecting it for the first time works any day.</p>
+            )}
+          </div>
 
-      <section className="glass rounded-2xl p-7 mb-6">
-        <p className="text-xs text-text-muted uppercase tracking-wide mb-2">GeeksforGeeks account</p>
-        <p className="text-sm text-text-secondary mb-4">
-          Powers your GfG score and progress on the Achievements page.
-          {!gfgAlreadyLinked && " Connecting it for the first time works any day."}
-        </p>
-        <input
-          value={gfgUsername}
-          onChange={(e) => setGfgUsername(e.target.value)}
-          disabled={!gfgEditable}
-          placeholder="your-gfg-username"
-          className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-      </section>
+          <div>
+            <p className="text-xs text-text-muted uppercase tracking-wide mb-1.5">GeeksforGeeks</p>
+            <input
+              value={gfgUsername}
+              onChange={(e) => setGfgUsername(e.target.value)}
+              disabled={!gfgEditable}
+              placeholder="your-gfg-username"
+              className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            {!gfgAlreadyLinked && (
+              <p className="text-xs text-text-muted mt-1.5">Connecting it for the first time works any day.</p>
+            )}
+          </div>
 
-      <section className="glass rounded-2xl p-7 mb-6">
-        <p className="text-xs text-text-muted uppercase tracking-wide mb-2">HackerRank account</p>
-        <p className="text-sm text-text-secondary mb-4">
-          Powers your HackerRank score (badge stars) and progress on the Achievements page.
-          {!hackerrankAlreadyLinked && " Connecting it for the first time works any day."}
-        </p>
-        <input
-          value={hackerrankUsername}
-          onChange={(e) => setHackerrankUsername(e.target.value)}
-          disabled={!hackerrankEditable}
-          placeholder="your-hackerrank-username"
-          className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
-        />
+          <div>
+            <p className="text-xs text-text-muted uppercase tracking-wide mb-1.5">HackerRank</p>
+            <input
+              value={hackerrankUsername}
+              onChange={(e) => setHackerrankUsername(e.target.value)}
+              disabled={!hackerrankEditable}
+              placeholder="your-hackerrank-username"
+              className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            {!hackerrankAlreadyLinked && (
+              <p className="text-xs text-text-muted mt-1.5">Connecting it for the first time works any day.</p>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs text-text-muted uppercase tracking-wide mb-1.5">GitHub</p>
+            <input
+              value={githubUsername}
+              onChange={(e) => setGithubUsername(e.target.value)}
+              disabled={!githubEditable}
+              placeholder="your-github-username"
+              className="w-full glass rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            {!githubAlreadyLinked && (
+              <p className="text-xs text-text-muted mt-1.5">Connecting it for the first time works any day.</p>
+            )}
+          </div>
+        </div>
       </section>
 
       <section className="glass rounded-2xl p-7 mb-6">

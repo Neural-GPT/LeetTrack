@@ -148,7 +148,7 @@ def get_background_media(f: str, db: Session = Depends(get_db)):
         try:
             filename, media_type = cache_remote_media(s.background_media_url)
         except RemoteMediaFetchError as exc:
-            raise HTTPException(502, f"Couldn't re-fetch the background link — {exc}") from exc
+            raise HTTPException(502, f"Couldn't re-fetch the background link: {exc}") from exc
         s.background_media_cache_path = filename
         s.background_media_cache_type = media_type
         db.commit()
@@ -231,7 +231,7 @@ def update_theme(
                 try:
                     filename, media_type = cache_remote_media(new_url)
                 except RemoteMediaFetchError as exc:
-                    raise HTTPException(502, f"Couldn't cache that link — {exc}") from exc
+                    raise HTTPException(502, f"Couldn't cache that link: {exc}") from exc
                 s.background_media_cache_path = filename
                 s.background_media_cache_type = media_type
             s.background_media_url = new_url

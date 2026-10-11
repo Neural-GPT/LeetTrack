@@ -40,8 +40,8 @@ export default function LevelProgressBar() {
       href="/achievements"
       title={
         level.is_max_level
-          ? `Level ${level.level} — all levels cleared (${level.xp} XP)`
-          : `Level ${level.level} — ${level.xp_into_level}/${level.xp_needed_for_level} XP to next level`
+          ? `Level ${level.level}: all levels cleared (${level.xp} XP)`
+          : `Level ${level.level}: ${level.xp_into_level}/${level.xp_needed_for_level} XP to next level`
       }
       className="glass rounded-2xl p-1.5 flex items-center gap-2 h-9 px-3 hover:brightness-110 transition"
     >

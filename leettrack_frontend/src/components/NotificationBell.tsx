@@ -104,7 +104,7 @@ function PollVoteWidget({ pollId }: { pollId: number }) {
         {closed
           ? "Poll closed."
           : alreadyVoted
-          ? "Your vote is in — results post here once the poll closes."
+          ? "Your vote is in. Results post here once the poll closes."
           : "Tap an option to vote."}
       </p>
     </div>

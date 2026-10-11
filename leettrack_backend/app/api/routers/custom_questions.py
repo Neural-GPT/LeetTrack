@@ -148,7 +148,7 @@ def create_custom_question(
             Notification(
                 user_id=sid,
                 type="new_custom_question",
-                message=f"New question from your teacher: '{question.title}' — due "
+                message=f"New question from your teacher: '{question.title}', due "
                 f"{question.deadline.strftime('%b %d, %I:%M %p')}.",
             )
         )
@@ -403,7 +403,7 @@ def submit_custom_question(
 ):
     s = _my_submission(db, student, question_id)
     if s.status == CustomSubmissionStatus.graded:
-        raise HTTPException(400, "This has already been graded — contact your teacher to resubmit.")
+        raise HTTPException(400, "This has already been graded. Contact your teacher to resubmit.")
     if not payload.code.strip():
         raise HTTPException(400, "Submitted code can't be empty.")
 

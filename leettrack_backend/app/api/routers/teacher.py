@@ -148,7 +148,7 @@ def leetcode_problem_info(
     metadata = fetch_problem_metadata(slug)
     if not metadata:
         raise HTTPException(
-            502, "Couldn't fetch that problem from LeetCode — check the link, or set difficulty manually."
+            502, "Couldn't fetch that problem from LeetCode. Check the link, or set difficulty manually."
         )
 
     return LeetCodeProblemInfoOut(

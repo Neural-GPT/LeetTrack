@@ -229,7 +229,7 @@ function DashboardContent() {
                   <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    title="Solved it? Check for the update here — this can take a few seconds since it looks it up on LeetCode."
+                    title="Solved it? Check for the update here. This can take a few seconds since it looks it up on LeetCode."
                     className="glass text-text-secondary text-sm px-3.5 py-2.5 rounded-lg disabled:opacity-60"
                   >
                     {refreshing ? "Checking…" : "Check for updates"}

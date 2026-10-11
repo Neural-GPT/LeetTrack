@@ -57,7 +57,7 @@ def create_and_send_otp(
     f"This code will expire in {settings.OTP_EXPIRE_MINUTES} minutes.\n\n"
     "If you didn't request this code, you can safely ignore this email. "
     "Your account will remain secure.\n\n"
-    "— The LeetTrack Team"
+    "The LeetTrack Team"
 )
     send_email(email, subject, body)
 

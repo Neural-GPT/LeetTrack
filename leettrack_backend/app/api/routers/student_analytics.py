@@ -139,7 +139,7 @@ def generate_ai_suggestions(
     if not graph:
         return SuggestionsOut(
             suggestions="Not enough solved or attempted assignments yet to generate a "
-            "meaningful analysis — come back after a few more assignments."
+            "meaningful analysis. Come back after a few more assignments."
         )
 
     payload = {
@@ -224,7 +224,7 @@ def start_contest(
     picked = skill_analysis.pick_contest_problem(db, student.id)
     if not picked:
         raise HTTPException(
-            404, "No problems exist in the system yet — ask a teacher to create an assignment first."
+            404, "No problems exist in the system yet. Ask a teacher to create an assignment first."
         )
     problem, skill_tag = picked
 
@@ -285,7 +285,7 @@ def submit_contest(
     if now > deadline:
         attempt.status = ContestAttemptStatus.expired
         db.commit()
-        raise HTTPException(400, "Time's up — this attempt expired before you submitted.")
+        raise HTTPException(400, "Time's up. This attempt expired before you submitted.")
 
     started = attempt.started_at.replace(tzinfo=timezone.utc)
     attempt.code = body.code

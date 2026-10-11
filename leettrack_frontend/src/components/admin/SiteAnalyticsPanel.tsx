@@ -366,7 +366,7 @@ export function SiteAnalyticsPanel() {
       });
       setActionMessage(
         result.deleted === 0
-          ? "Nothing to purge — no rows older than that."
+          ? "Nothing to purge. No rows are older than that."
           : `Purged ${result.deleted} day${result.deleted === 1 ? "" : "s"} of old analytics.`
       );
       load();
@@ -411,7 +411,7 @@ export function SiteAnalyticsPanel() {
               <StatCard label="New signups" value={latest.new_signups} live={latest.is_today} />
               <StatCard
                 label="7-day retention"
-                value={latest.retention_7d == null ? "—" : `${Math.round(latest.retention_7d * 100)}%`}
+                value={latest.retention_7d == null ? "N/A" : `${Math.round(latest.retention_7d * 100)}%`}
                 live={latest.is_today}
               />
               <StatCard label="Logins" value={latest.total_logins} live={latest.is_today} />

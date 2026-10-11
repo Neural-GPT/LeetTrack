@@ -67,7 +67,7 @@ export default function WeeklyPanel() {
       {/* Weekly goal */}
       <div className="glass rounded-2xl p-5">
         <p className="text-xs text-text-muted uppercase tracking-wide mb-3">
-          Weekly goal — week of {digest.week_start}
+          Weekly goal, week of {digest.week_start}
         </p>
 
         {digest.goal_target_type ? (
@@ -131,16 +131,16 @@ export default function WeeklyPanel() {
           />
           <DigestRow
             label="Your score this week"
-            value={digest.my_score != null ? digest.my_score.toFixed(1) : "—"}
+            value={digest.my_score != null ? digest.my_score.toFixed(1) : "N/A"}
           />
           <div className="h-px bg-white/10 my-1" />
           <DigestRow
             label="Leaderboard topper"
-            value={digest.leaderboard_topper_name ?? "—"}
+            value={digest.leaderboard_topper_name ?? "N/A"}
           />
           <DigestRow
             label="Topper's score"
-            value={digest.leaderboard_topper_score != null ? digest.leaderboard_topper_score.toFixed(1) : "—"}
+            value={digest.leaderboard_topper_score != null ? digest.leaderboard_topper_score.toFixed(1) : "N/A"}
           />
         </div>
       </div>

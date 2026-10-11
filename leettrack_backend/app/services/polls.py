@@ -154,7 +154,7 @@ def finalize_ended_polls(db: Session) -> int:
                 Notification(
                     user_id=uid,
                     type="poll_result",
-                    message=f"Poll results — \"{poll.question}\": {summary} ({total} vote{'s' if total != 1 else ''})",
+                    message=f"Poll results for \"{poll.question}\": {summary} ({total} vote{'s' if total != 1 else ''})",
                     meta=json.dumps({"poll_id": poll.id}),
                 )
             )

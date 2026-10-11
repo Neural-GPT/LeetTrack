@@ -475,7 +475,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            "detail": "Something went wrong on our end. Please try again — if it keeps happening, mention error code "
+            "detail": "Something went wrong on our end. Please try again. If it keeps happening, mention error code "
             + error_id,
             "error_id": error_id,
         },

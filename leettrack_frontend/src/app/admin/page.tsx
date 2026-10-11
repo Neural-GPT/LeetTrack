@@ -49,7 +49,7 @@ function CreateTeacherPanel({ onCreated }: { onCreated: () => void }) {
         username,
         password,
       });
-      setSuccess(`Created — share these credentials with ${fullName} directly.`);
+      setSuccess(`Created. Share these credentials with ${fullName} directly.`);
       setFullName("");
       setEmail("");
       setUsername("");
@@ -180,7 +180,7 @@ function CreateStudentPanel() {
         password,
         section_id: sectionId || null,
       });
-      setSuccess(`Created — share these credentials with ${fullName} directly.`);
+      setSuccess(`Created. Share these credentials with ${fullName} directly.`);
       setFullName("");
       setEmail("");
       setPassword("");
@@ -198,7 +198,7 @@ function CreateStudentPanel() {
         <div>
           <p className="text-xs text-text-muted uppercase tracking-wide">Student accounts</p>
           <p className="text-sm text-text-secondary mt-1">
-            Normal signup needs a college email + OTP — use this to add a student with any
+            Normal signup needs a college email + OTP. Use this to add a student with any
             email instead (transfers, edge cases, testing).
           </p>
         </div>
@@ -608,7 +608,7 @@ function StudentsListPanel() {
       </div>
       {expanded && sections.length === 0 && (
         <p className="text-xs text-text-muted mt-2">
-          No sections exist yet — a teacher (or you, from Create Student) needs to make one before
+          No sections exist yet. A teacher (or you, from Create Student) needs to make one before
           it can be assigned here.
         </p>
       )}
@@ -794,7 +794,7 @@ function AppearancePanel() {
     try {
       await api.patch("/api/settings/theme", update);
       setCurrent(next);
-      setMessage("Saved — applies for everyone on next page load.");
+      setMessage("Saved. Applies for everyone on next page load.");
     } catch (err) {
       setMessage(err instanceof ApiError ? err.message : "Couldn't save that.");
       // Roll the preview back since the save failed.
@@ -819,8 +819,8 @@ function AppearancePanel() {
       setCurrent(updated);
       setMessage(
         mediaUrlInput.trim()
-          ? "Cached and saved — every visitor now loads it from this server, not the original link."
-          : "Cleared — falling back to the registered media below."
+          ? "Cached and saved. Every visitor now loads it from this server, not the original link."
+          : "Cleared. Falling back to the registered media below."
       );
     } catch (err) {
       setMessage(err instanceof ApiError ? err.message : "Couldn't save that link.");
@@ -916,19 +916,19 @@ function AppearancePanel() {
       </div>
 
       <p className="text-xs text-text-muted uppercase tracking-wide mb-2.5">
-        Background media — direct link
+        Background media: direct link
       </p>
       <p className="text-sm text-text-secondary mb-3">
-        Paste a link to an already-hosted image or video — no need to upload anything to the
+        Paste a link to an already-hosted image or video. No need to upload anything to the
         frontend&apos;s public/ folder. On save, the server fetches it <em>once</em> and caches
         its own copy, so every visitor loads it from here (fast, works even if the original site
         blocks hotlinking) instead of everyone&apos;s browser re-fetching the external link on
-        every page load. Only one link is cached at a time — pasting a new one replaces it and
+        every page load. Only one link is cached at a time; pasting a new one replaces it and
         the old cached copy is deleted, so this never piles up storage. Takes priority over the
         registered media picker below; clear the field and save to fall back to that instead.
         <span className="block mt-1.5 text-text-muted">
           Important: this needs to be a link straight to the actual file (usually ending in
-          .mp4/.webm or .jpg/.png/.webp) — not a webpage that displays one. E.g. from a wallpaper
+          .mp4/.webm or .jpg/.png/.webp), not a webpage that displays one. E.g. from a wallpaper
           site, that&apos;s the video/image&apos;s own address, not the gallery page you view it
           on. Use the preview below to confirm before saving.
         </span>
@@ -959,7 +959,7 @@ function AppearancePanel() {
       {mediaUrlInput.trim() && (
         <div className="mb-6">
           <p className="text-xs text-text-muted mb-1.5">
-            Preview — check this loads before saving
+            Preview: check this loads before saving
           </p>
           <div className="w-full max-w-xs aspect-video rounded-lg overflow-hidden glass">
             {guessMediaType(mediaUrlInput) === "image" ? (
@@ -997,25 +997,25 @@ function AppearancePanel() {
             </p>
           )}
           {urlPreviewStatus === "ok" && (
-            <p className="text-xs text-accepted mt-1.5">Loads fine — ready to save.</p>
+            <p className="text-xs text-accepted mt-1.5">Loads fine, ready to save.</p>
           )}
         </div>
       )}
 
       {current.background_media_url && (
         <p className="text-xs text-brand-live mb-6">
-          Currently active — serving from this server&apos;s cache, not the original link
+          Currently active. Serving from this server&apos;s cache, not the original link
           directly. The registered media picker below is being ignored while this is set.
         </p>
       )}
 
       <p className="text-xs text-text-muted uppercase tracking-wide mb-2.5">
-        Background media — registered files
+        Background media: registered files
       </p>
 
       {(!options || options.media.length === 0) && (
         <p className="text-sm text-text-muted mb-3">
-          Nothing registered yet — add a file below. It needs to already be uploaded to the
+          Nothing registered yet. Add a file below. It needs to already be uploaded to the
           frontend&apos;s public/ folder with this exact name.
         </p>
       )}
@@ -1077,12 +1077,12 @@ function AppearancePanel() {
       </form>
       <p className="text-xs text-text-muted mt-2 mb-6">
         Video: .mp4 or .webm. Image: .jpg, .jpeg, .png, or .webp. Label is derived from the
-        filename automatically — underscores become spaces.
+        filename automatically; underscores become spaces.
       </p>
 
       <p className="text-xs text-text-muted uppercase tracking-wide mb-2.5">Site theme</p>
       <p className="text-sm text-text-secondary mb-3">
-        Switches panel styling across every page — dashboards, admin, leaderboard, all of it.
+        Switches panel styling across every page: dashboards, admin, leaderboard, all of it.
         Doesn&apos;t touch accent color or background media, which stay set separately above.
       </p>
       <div className="flex flex-wrap gap-2.5 mb-6">
@@ -1211,7 +1211,7 @@ function NvidiaKeysPanel() {
     <section className="glass rounded-2xl p-7">
       <p className="text-xs text-text-muted uppercase tracking-wide mb-1">AI Assistant (NVIDIA)</p>
       <p className="text-sm text-text-secondary mb-5">
-        Add one or more keys — if one runs out or gets rate-limited, the assistant automatically
+        Add one or more keys. If one runs out or gets rate-limited, the assistant automatically
         tries the next.
       </p>
 
@@ -1353,7 +1353,7 @@ function DataCenterPanel() {
           <p className="text-xs text-text-muted uppercase tracking-wide">Data Center</p>
           <p className="text-sm text-text-secondary mt-1">
             Raw submission data, batched for export
-            {retentionDays !== null && ` — purged ${retentionDays} days after download`}.
+            {retentionDays !== null && `, purged ${retentionDays} days after download`}.
           </p>
         </div>
         <div className="flex gap-2">
@@ -1387,7 +1387,7 @@ function DataCenterPanel() {
           <p className="text-sm text-danger text-center py-12">{error}</p>
         ) : batches.length === 0 ? (
           <p className="text-sm text-text-secondary text-center py-12">
-            No batches yet — create one above, or wait for the weekly scheduled job.
+            No batches yet. Create one above, or wait for the weekly scheduled job.
           </p>
         ) : (
           <ul className="divide-y divide-white/10">
