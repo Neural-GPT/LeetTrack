@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 
 type ProgressOut = {
@@ -57,12 +57,25 @@ const LANGUAGE_COLORS: Record<string, string> = {
 };
 const FALLBACK_LANGUAGE_COLORS = ["#2CBB5D", "#E9A23B", "#E5484D", "#3B82E9", "#B25CE0", "#3BC7E9"];
 
+type PlatformKey = "leetcode" | "github" | "gfg" | "hackerrank";
+
+// GitHub sits right after LeetCode on purpose: it was previously
+// stacked above the LeetCode stats, and now gets its own pill.
+const PLATFORM_TABS: { key: PlatformKey; label: string }[] = [
+  { key: "leetcode", label: "LeetCode" },
+  { key: "github", label: "GitHub" },
+  { key: "gfg", label: "GeeksforGeeks" },
+  { key: "hackerrank", label: "HackerRank" },
+];
+
 export default function ProgressPanel() {
-  const [platform, setPlatform] = useState<"leetcode" | "gfg" | "hackerrank">("leetcode");
+  const [platform, setPlatform] = useState<PlatformKey>("leetcode");
   const [data, setData] = useState<ProgressOut | null>(null);
   const [loading, setLoading] = useState(true);
   const [github, setGithub] = useState<GithubStatsOut | null>(null);
   const [githubLoading, setGithubLoading] = useState(false);
+  const [githubError, setGithubError] = useState(false);
+  const githubFetchedRef = useRef(false);
 
   function load() {
     api
@@ -73,34 +86,41 @@ export default function ProgressPanel() {
 
   useEffect(load, []);
 
+  // GitHub stats call out to GitHub's API, so they're only fetched once
+  // the GitHub pill is actually opened (and only once per page visit).
   useEffect(() => {
-    if (!data?.github_connected) {
-      setGithub(null);
+    if (platform !== "github" || !data?.github_connected || githubFetchedRef.current) {
       return;
     }
+    githubFetchedRef.current = true;
+    setGithubError(false);
     setGithubLoading(true);
     api
       .get<GithubStatsOut>("/api/gamification/github")
       .then(setGithub)
+      .catch(() => {
+        githubFetchedRef.current = false; // let reopening the pill retry
+        setGithubError(true);
+      })
       .finally(() => setGithubLoading(false));
-  }, [data?.github_connected]);
+  }, [platform, data?.github_connected]);
 
   const { solved, total_questions } = data ?? {};
 
   return (
     <div className="space-y-5">
-      <div className="glass rounded-2xl p-1.5 flex items-center gap-1 w-fit">
-        {(
-          [
-            { key: "leetcode", label: "LeetCode" },
-            { key: "gfg", label: "GeeksforGeeks" },
-            { key: "hackerrank", label: "HackerRank" },
-          ] as const
-        ).map((p) => (
+      <div
+        role="tablist"
+        aria-label="Platform"
+        className="glass rounded-2xl p-1.5 flex items-center gap-1 w-fit max-w-full overflow-x-auto"
+      >
+        {PLATFORM_TABS.map((p) => (
           <button
             key={p.key}
+            role="tab"
+            aria-selected={platform === p.key}
             onClick={() => setPlatform(p.key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               platform === p.key
                 ? "bg-brand-live text-[#0A0A0C]"
                 : "text-text-secondary hover:text-text-primary"
@@ -114,48 +134,58 @@ export default function ProgressPanel() {
       {platform === "gfg" && <GfgProgressSection />}
       {platform === "hackerrank" && <HackerRankProgressSection />}
 
+      {platform === "github" && (
+        <>
+          {loading ? (
+            <p className="text-sm text-text-muted py-10 text-center">Loading GitHub…</p>
+          ) : !data ? (
+            <div className="glass rounded-2xl p-8 text-center">
+              <p className="text-sm text-text-secondary mb-1">Couldn&apos;t load your progress right now.</p>
+            </div>
+          ) : !data.github_connected ? (
+            <GithubConnectCard onConnected={load} />
+          ) : (
+            <GithubStatsSection
+              stats={github}
+              loading={githubLoading || (github === null && !githubError)}
+            />
+          )}
+        </>
+      )}
+
       {platform === "leetcode" && (
         <>
           {loading ? (
             <p className="text-sm text-text-muted py-10 text-center">Loading progress…</p>
           ) : !data ? (
             <div className="glass rounded-2xl p-8 text-center">
-              <p className="text-sm text-text-secondary mb-1">Couldn't load your progress right now.</p>
+              <p className="text-sm text-text-secondary mb-1">Couldn&apos;t load your progress right now.</p>
+            </div>
+          ) : !data.connected ? (
+            <div className="glass rounded-2xl p-8 text-center">
+              <p className="text-sm text-text-secondary mb-1">
+                {data.username
+                  ? "Couldn't reach LeetCode for that profile right now."
+                  : "Connect your LeetCode username in Settings to see your progress here."}
+              </p>
             </div>
           ) : (
             <>
-              {!data.github_connected && <GithubConnectCard onConnected={load} />}
-              {data.github_connected && (githubLoading || github) && (
-                <GithubStatsSection stats={github} loading={githubLoading} />
-              )}
+              <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
+                <SolvedRing
+                  solved={solved ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
+                  totalQuestions={total_questions ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
+                  attempting={data.attempting}
+                />
+                <ProfileCard data={data} />
+              </div>
 
-              {!data.connected ? (
-                <div className="glass rounded-2xl p-8 text-center">
-                  <p className="text-sm text-text-secondary mb-1">
-                    {data.username
-                      ? "Couldn't reach LeetCode for that profile right now."
-                      : "Connect your LeetCode username in Settings to see your progress here."}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
-                    <SolvedRing
-                      solved={solved ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
-                      totalQuestions={total_questions ?? { easy: 0, medium: 0, hard: 0, total: 0 }}
-                      attempting={data.attempting}
-                    />
-                    <ProfileCard data={data} />
-                  </div>
-
-                  <SubmissionHeatmap
-                    calendar={data.submission_calendar}
-                    totalSubmissions={data.total_submissions_past_year}
-                    activeDays={data.total_active_days}
-                    maxStreak={data.max_streak}
-                  />
-                </>
-              )}
+              <SubmissionHeatmap
+                calendar={data.submission_calendar}
+                totalSubmissions={data.total_submissions_past_year}
+                activeDays={data.total_active_days}
+                maxStreak={data.max_streak}
+              />
             </>
           )}
         </>
@@ -342,7 +372,7 @@ function GithubConnectCard({ onConnected }: { onConnected: () => void }) {
     >
       <GithubIcon className="w-6 h-6 text-text-secondary shrink-0" />
       <div className="min-w-0 mr-auto">
-        <p className="text-sm text-text-primary">Connect GitHub to unlock more statistics</p>
+        <p className="text-sm text-text-primary">Connect your GitHub account to see your repositories, stars and languages here.</p>
         {error && <p className="text-xs text-danger mt-1">{error}</p>}
       </div>
       <input
@@ -382,7 +412,7 @@ function GithubStatsSection({
     return (
       <div className="glass rounded-2xl p-8 text-center">
         <p className="text-sm text-text-secondary">
-          Couldn't reach GitHub for that profile right now.
+          Couldn&apos;t reach GitHub for that profile right now.
         </p>
       </div>
     );
@@ -579,7 +609,7 @@ function SolvedRing({
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-display font-semibold text-3xl text-text-primary">
             {solved.total}
-            <span className="text-base text-text-muted">/{totalQuestions.total || "—"}</span>
+            <span className="text-base text-text-muted">/{totalQuestions.total || "N/A"}</span>
           </span>
           <span className="text-xs text-accepted flex items-center gap-1 mt-1">✓ Solved</span>
           {attempting > 0 && (
@@ -613,7 +643,7 @@ function DifficultyStat({
         {label}
       </p>
       <p className="text-sm text-text-primary font-display">
-        {solved}/{total || "—"}
+        {solved}/{total || "N/A"}
       </p>
     </div>
   );
@@ -644,7 +674,7 @@ function ProfileCard({ data }: { data: ProgressOut }) {
         <p className="text-xs text-text-secondary mb-2">
           Rank{" "}
           <span className="text-text-primary font-medium">
-            {data.ranking ? `~${data.ranking.toLocaleString()}` : "—"}
+            {data.ranking ? `~${data.ranking.toLocaleString()}` : "N/A"}
           </span>
         </p>
 
