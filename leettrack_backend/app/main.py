@@ -101,11 +101,11 @@ def _ensure_student_profile_platform_columns() -> None:
         "gfg_easy_solved": "INTEGER DEFAULT 0",
         "gfg_medium_solved": "INTEGER DEFAULT 0",
         "gfg_hard_solved": "INTEGER DEFAULT 0",
-        "gfg_stats_updated_at": "DATETIME",
+        "gfg_stats_updated_at": "TIMESTAMP",
         "hackerrank_username": "VARCHAR(50)",
         "hackerrank_total_stars": "INTEGER DEFAULT 0",
         "hackerrank_badges_count": "INTEGER DEFAULT 0",
-        "hackerrank_stats_updated_at": "DATETIME",
+        "hackerrank_stats_updated_at": "TIMESTAMP",
     }
     with engine.begin() as conn:
         for column, ddl in additions.items():
@@ -126,7 +126,7 @@ def _ensure_problem_columns() -> None:
     existing = {c["name"] for c in insp.get_columns("problems")}
     additions = {
         "reference_solution": "TEXT",
-        "reference_solution_updated_at": "DATETIME",
+        "reference_solution_updated_at": "TIMESTAMP",
     }
     with engine.begin() as conn:
         for column, ddl in additions.items():
