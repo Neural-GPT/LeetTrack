@@ -211,14 +211,14 @@ function SkillsContent() {
   const trend = TREND_LABEL[summary.trend_direction] ?? TREND_LABEL.flat;
 
   return (
-    <div className="max-w-5xl mx-auto pb-14">
+    <div className="max-w-5xl mx-auto pb-14 pt-20">
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="font-display font-semibold text-2xl text-text-primary mb-1">
             Skills &amp; Performance
           </h1>
           <p className="text-sm text-text-muted">
-            Where you stand across topics, and what to work on next — based on your assigned submissions.
+            Where you stand across topics, and what to work on next, based on your assigned submissions.
           </p>
         </div>
         <Link
@@ -241,7 +241,7 @@ function SkillsContent() {
           <p className="text-xs text-text-muted uppercase tracking-wide mb-4">DSA skills graph</p>
           {graph.length === 0 ? (
             <p className="text-sm text-text-muted">
-              No assigned submissions yet — once you've attempted a few assignments, your topic breakdown shows up here.
+              No assigned submissions yet. Once you&apos;ve attempted a few assignments, your topic breakdown shows up here.
             </p>
           ) : (
             <SkillsRadar tags={graph.slice(0, 8)} />
