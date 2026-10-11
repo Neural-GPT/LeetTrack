@@ -125,7 +125,7 @@ function ContestContent() {
       if (timerRef.current) clearInterval(timerRef.current);
       loadHistory();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Couldn't submit right now — your code wasn't lost, try again.");
+      setError(e instanceof ApiError ? e.message : "Couldn't submit right now. Your code wasn't lost, try again.");
     } finally {
       setSubmitting(false);
     }
@@ -134,17 +134,17 @@ function ContestContent() {
   const timeUp = problem !== null && remaining <= 0 && !result;
 
   return (
-    <div className="max-w-4xl mx-auto pb-14">
+    <div className="max-w-4xl mx-auto pb-14 pt-20">
       <h1 className="font-display font-semibold text-2xl text-text-primary mb-1">Contest Simulator</h1>
       <p className="text-sm text-text-muted mb-6">
-        One timed problem, picked from a topic you're weak in. Submitted code is graded by AI against a
-        reference solution — not run against real test cases.
+        One timed problem, picked from a topic you&apos;re weak in. Submitted code is graded by AI against a
+        reference solution, not run against real test cases.
       </p>
 
       {!problem && (
         <section className="glass rounded-2xl p-8 text-center mb-8">
           <p className="text-sm text-text-secondary mb-4">
-            Ready when you are — we'll pick one problem from your weakest topic and start the clock.
+            Ready when you are. We&apos;ll pick one problem from your weakest topic and start the clock.
           </p>
           <button
             onClick={startContest}
@@ -180,7 +180,7 @@ function ContestContent() {
                 remaining <= 60 && remaining > 0 ? "text-danger" : "text-text-primary"
               }`}
             >
-              {result ? "—" : formatClock(remaining)}
+              {result ? "N/A" : formatClock(remaining)}
             </div>
           </div>
 
@@ -197,7 +197,7 @@ function ContestContent() {
                   <option value="cpp">C++</option>
                   <option value="javascript">JavaScript</option>
                 </select>
-                {timeUp && <span className="text-xs text-danger">Time's up — submit now or it'll expire.</span>}
+                {timeUp && <span className="text-xs text-danger">Time&apos;s up. Submit now or it&apos;ll expire.</span>}
               </div>
               <textarea
                 value={code}
@@ -223,7 +223,7 @@ function ContestContent() {
             <div className="space-y-3">
               <div className="flex items-center gap-4">
                 <span className="font-display font-semibold text-3xl text-text-primary">
-                  {result.score ?? "—"}
+                  {result.score ?? "N/A"}
                   <span className="text-sm text-text-muted font-normal">/100</span>
                 </span>
                 <span className={`text-sm font-medium ${VERDICT_STYLE[result.verdict]?.color ?? "text-text-secondary"}`}>
