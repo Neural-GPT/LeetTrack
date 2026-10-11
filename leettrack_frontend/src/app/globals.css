@@ -228,3 +228,54 @@ html {
   animation-timing-function: ease-in;
   animation-fill-mode: both;
 }
+
+/* ---------------------------------------------------------------------
+   Shared form controls (Custom Questions, teacher and student sides).
+   Defined here rather than in a page-level <style jsx global> block:
+   the old `.input` class lived inside the teacher Assignments page and
+   only existed while that page was mounted, so any other page using it
+   rendered unstyled, tiny browser-default boxes.
+   --------------------------------------------------------------------- */
+.field-control {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: inherit;
+  outline: none;
+  color-scheme: dark;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.field-control:hover {
+  border-color: rgba(255, 255, 255, 0.26);
+}
+.field-control:focus {
+  border-color: color-mix(in srgb, var(--color-brand) 70%, transparent);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 14%, transparent);
+}
+.field-control::placeholder {
+  color: var(--color-text-muted);
+}
+.field-control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+textarea.field-control {
+  resize: vertical;
+}
+
+/* Code editor / viewer: monospace, preserved indentation, no wrapping so
+   students and teachers see code exactly as written. */
+.code-area {
+  font-family: ui-monospace, "SF Mono", "IBM Plex Mono", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  tab-size: 4;
+  white-space: pre;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.34);
+}
